@@ -7,3 +7,9 @@
 - functions: finding exact centre between two points; auto finds nearest *cafes* only.
 - searching: exactly same as kakaomap (any locations within South Korea works, e.g. streets, stations, road, ...); only cafes shown (range: 1km from midpoint).
 - possible improvements: 1. better describing sentence; 2. on-off filters (check-box; multiple check-boxes can be selected; e.g. cafes, restaurants, stations, different colours or shapes for categories); 3. language options (toggle: english and korean, auto change).
+
+**v2**
+- changes/improvements:
+        1. filter panel added; currently, cafe/restaurant/station.
+        2. each category coloured differently.
+        3. 

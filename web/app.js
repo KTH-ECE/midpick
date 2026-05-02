@@ -1,10 +1,13 @@
-// ── Bootstrap ─────────────────────────────────────────────────────────────────
-// Dynamically load the Kakao Maps SDK so the app key stays in config.js
-// (which is gitignored) rather than being hard-coded in index.html.
+// ── Config ────────────────────────────────────────────────────────────────────
+var CATEGORIES = {
+  CE7: { label: 'Cafe',       color: '#43AA8B' },
+  FD6: { label: 'Restaurant', color: '#F4A261' },
+  SW8: { label: 'Station',    color: '#9B5DE5' }
+};
 
+// ── SDK ───────────────────────────────────────────────────────────────────────
 function loadKakaoSDK() {
   return new Promise(function (resolve, reject) {
-    // Guard: make sure config.js was loaded and has a real key
     if (typeof KAKAO_APP_KEY === 'undefined' || KAKAO_APP_KEY === 'YOUR_JAVASCRIPT_APP_KEY_HERE') {
       reject(new Error(
         'config.js가 없거나 앱 키가 설정되지 않았습니다.\n' +
@@ -12,30 +15,25 @@ function loadKakaoSDK() {
       ));
       return;
     }
-
     var script = document.createElement('script');
-    // autoload=false lets us call kakao.maps.load() ourselves, so we know
-    // exactly when everything (including the services library) is ready.
+    // autoload=false so we can call kakao.maps.load() ourselves after the services library is ready
     script.src =
       '//dapi.kakao.com/v2/maps/sdk.js?appkey=' + KAKAO_APP_KEY +
       '&libraries=services&autoload=false';
     script.onerror = function () {
       reject(new Error('Kakao Maps SDK를 불러오지 못했습니다. 키와 허용 도메인을 확인해주세요.'));
     };
-    script.onload = function () {
-      // kakao.maps.load defers execution until the map engine is fully ready
-      kakao.maps.load(resolve);
-    };
+    script.onload = function () { kakao.maps.load(resolve); };
     document.head.appendChild(script);
   });
 }
 
-// ── Module-level state ─────────────────────────────────────────────────────────
-var map;           // kakao.maps.Map instance
-var markers = [];  // all live markers; cleared on each new search
+// ── State ─────────────────────────────────────────────────────────────────────
+var map;
+var markers = [];
 var openInfoWindow = null;
 
-// ── Marker helpers ─────────────────────────────────────────────────────────────
+// ── Markers ───────────────────────────────────────────────────────────────────
 function clearMarkers() {
   markers.forEach(function (m) { m.setMap(null); });
   markers = [];
@@ -45,9 +43,6 @@ function clearMarkers() {
   }
 }
 
-// Build a pin marker with a given fill colour.
-// Kakao's default marker is always red, so we use a tiny SVG data-URI
-// to distinguish "your locations" (blue) from the midpoint (red) from cafes (green).
 function makeMarker(latLng, title, color) {
   var svg =
     '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="36" viewBox="0 0 24 36">' +
@@ -66,9 +61,7 @@ function makeMarker(latLng, title, color) {
   return marker;
 }
 
-// ── Geocoding ─────────────────────────────────────────────────────────────────
-// keywordSearch handles place names like "강남역" or "홍익대학교", not just
-// formal street addresses.  It returns { lat, lng } of the top result.
+// ── Search ────────────────────────────────────────────────────────────────────
 function searchLocation(keyword) {
   var places = new kakao.maps.services.Places();
   return new Promise(function (resolve, reject) {
@@ -86,115 +79,128 @@ function searchLocation(keyword) {
   });
 }
 
-// ── Search handler ─────────────────────────────────────────────────────────────
-function handleSearch() {
-  var addr1 = document.getElementById('addr1').value.trim();
-  var addr2 = document.getElementById('addr2').value.trim();
-  var btn    = document.getElementById('search-btn');
+function searchCategory(code, midLatLng) {
+  var places = new kakao.maps.services.Places();
+  return new Promise(function (resolve) {
+    places.categorySearch(code, function (results, status) {
+      if (status === kakao.maps.services.Status.OK) {
+        results.forEach(function (r) { r._categoryCode = code; });
+        resolve(results);
+      } else {
+        resolve([]);
+      }
+    }, { location: midLatLng, radius: 2000, sort: kakao.maps.services.SortBy.DISTANCE });
+  });
+}
 
-  if (!addr1 || !addr2) {
-    showError('두 위치를 모두 입력해주세요.');
-    return;
-  }
+function getSelectedCategories() {
+  var checked = document.querySelectorAll('.filter-check:checked');
+  return Array.prototype.map.call(checked, function (el) { return el.value; });
+}
+
+// ── Handler ───────────────────────────────────────────────────────────────────
+function handleSearch() {
+  var addr1    = document.getElementById('addr1').value.trim();
+  var addr2    = document.getElementById('addr2').value.trim();
+  var btn      = document.getElementById('search-btn');
+  var selected = getSelectedCategories();
+
+  if (!addr1 || !addr2) { showError('두 위치를 모두 입력해주세요.'); return; }
+  if (selected.length === 0) { showError('필터를 하나 이상 선택해주세요.'); return; }
 
   btn.disabled = true;
-  btn.textContent = '찾는 중…';
+  btn.textContent = 'Searching…';
   hideError();
   hideResults();
 
-  // Geocode both locations in parallel, then find midpoint and search cafes
   Promise.all([searchLocation(addr1), searchLocation(addr2)])
     .then(function (coords) {
-      var c1 = coords[0];
-      var c2 = coords[1];
-
-      var midLat = (c1.lat + c2.lat) / 2;
-      var midLng = (c1.lng + c2.lng) / 2;
+      var c1 = coords[0], c2 = coords[1];
+      var midLat    = (c1.lat + c2.lat) / 2;
+      var midLng    = (c1.lng + c2.lng) / 2;
       var midLatLng = new kakao.maps.LatLng(midLat, midLng);
 
       clearMarkers();
-
-      // Zoom / pan map to midpoint
       map.setCenter(midLatLng);
-      map.setLevel(6); // roughly 2 km view
+      map.setLevel(7);
 
-      // Pin the two input locations in blue, midpoint in red
       makeMarker(new kakao.maps.LatLng(c1.lat, c1.lng), c1.name, '#4361EE');
       makeMarker(new kakao.maps.LatLng(c2.lat, c2.lng), c2.name, '#4361EE');
       makeMarker(midLatLng, '중간 지점', '#E63946');
 
-      // Search for cafes (category CE7) within 1 km of the midpoint,
-      // sorted by distance so the closest appear first.
-      var places = new kakao.maps.services.Places();
-      places.categorySearch('CE7', function (results, status) {
-        btn.disabled = false;
-        btn.textContent = '중간 지점 찾기';
+      return Promise.all(selected.map(function (code) {
+        return searchCategory(code, midLatLng);
+      }));
+    })
+    .then(function (resultsPerCategory) {
+      btn.disabled = false;
+      btn.textContent = 'Find midpoint';
 
-        if (status === kakao.maps.services.Status.OK) {
-          renderCafes(results);
-        } else {
-          showError('반경 1km 내에 카페를 찾을 수 없습니다. 다른 위치로 시도해보세요.');
-        }
-      }, {
-        location: midLatLng,
-        radius: 1000,
-        sort: kakao.maps.services.SortBy.DISTANCE
-      });
+      var all = [];
+      resultsPerCategory.forEach(function (results) { all = all.concat(results); });
+      all.sort(function (a, b) { return parseInt(a.distance) - parseInt(b.distance); });
+
+      if (all.length === 0) {
+        showError('반경 2km 내에 결과를 찾을 수 없습니다. 다른 위치로 시도해보세요.');
+        return;
+      }
+      renderPlaces(all);
     })
     .catch(function (err) {
       btn.disabled = false;
-      btn.textContent = '중간 지점 찾기';
+      btn.textContent = 'Find midpoint';
       showError(err.message);
     });
 }
 
-// ── Render results ─────────────────────────────────────────────────────────────
-function renderCafes(cafes) {
-  var list  = document.getElementById('cafe-list');
+// ── Render ────────────────────────────────────────────────────────────────────
+function renderPlaces(places) {
+  var list  = document.getElementById('place-list');
   var count = document.getElementById('results-count');
 
   list.innerHTML = '';
-  count.textContent = '(' + cafes.length + '곳)';
+  count.textContent = '(' + places.length + ')';
 
-  cafes.forEach(function (cafe, i) {
-    var pos    = new kakao.maps.LatLng(parseFloat(cafe.y), parseFloat(cafe.x));
-    var marker = makeMarker(pos, cafe.place_name, '#43AA8B');
+  places.forEach(function (place, i) {
+    var cat    = CATEGORIES[place._categoryCode];
+    var pos    = new kakao.maps.LatLng(parseFloat(place.y), parseFloat(place.x));
+    var marker = makeMarker(pos, place.place_name, cat.color);
 
-    // Clicking a marker opens a small info bubble on the map
     kakao.maps.event.addListener(marker, 'click', function () {
       if (openInfoWindow) openInfoWindow.close();
       openInfoWindow = new kakao.maps.InfoWindow({
         content:
           '<div style="padding:8px 10px;font-size:13px;max-width:220px;line-height:1.5">' +
-          '<strong>' + cafe.place_name + '</strong><br>' +
-          (cafe.road_address_name || cafe.address_name) + '<br>' +
-          '<a href="' + cafe.place_url + '" target="_blank" rel="noopener" ' +
+          '<strong>' + place.place_name + '</strong><br>' +
+          (place.road_address_name || place.address_name) + '<br>' +
+          '<a href="' + place.place_url + '" target="_blank" rel="noopener" ' +
           'style="color:#4361EE">카카오맵에서 보기 →</a>' +
           '</div>'
       });
       openInfoWindow.open(map, marker);
     });
 
-    // Build result card
     var li = document.createElement('li');
-    li.className = 'cafe-item';
+    li.className = 'place-item';
 
-    var distText = cafe.distance
-      ? '<span class="cafe-distance">중간 지점에서 ' + cafe.distance + 'm</span>'
+    var distText = place.distance
+      ? '<span class="place-distance">' + place.distance + 'm from midpoint</span>'
       : '';
 
     li.innerHTML =
-      '<span class="cafe-num">' + (i + 1) + '</span>' +
-      '<div class="cafe-info">' +
-        '<strong class="cafe-name">' + cafe.place_name + '</strong>' +
-        '<span class="cafe-address">' + (cafe.road_address_name || cafe.address_name) + '</span>' +
+      '<span class="place-num">' + (i + 1) + '</span>' +
+      '<div class="place-info">' +
+        '<div class="place-name-row">' +
+          '<strong class="place-name">' + place.place_name + '</strong>' +
+          '<span class="cat-tag" style="background:' + cat.color + '">' + cat.label + '</span>' +
+        '</div>' +
+        '<span class="place-address">' + (place.road_address_name || place.address_name) + '</span>' +
         distText +
       '</div>' +
-      '<a class="cafe-link" href="' + cafe.place_url + '" ' +
+      '<a class="place-link" href="' + place.place_url + '" ' +
          'target="_blank" rel="noopener" ' +
-         'onclick="event.stopPropagation()">보기</a>';
+         'onclick="event.stopPropagation()">View</a>';
 
-    // Clicking the card pans the map to the cafe and opens its info window
     li.addEventListener('click', function () {
       map.panTo(pos);
       kakao.maps.event.trigger(marker, 'click');
@@ -206,38 +212,26 @@ function renderCafes(cafes) {
   showResults();
 }
 
-// ── UI helpers ─────────────────────────────────────────────────────────────────
+// ── UI helpers ────────────────────────────────────────────────────────────────
 function showError(msg) {
   var el = document.getElementById('error-msg');
   el.textContent = msg;
   el.classList.remove('hidden');
 }
+function hideError()   { document.getElementById('error-msg').classList.add('hidden'); }
+function showResults() { document.getElementById('results-section').classList.remove('hidden'); }
+function hideResults() { document.getElementById('results-section').classList.add('hidden'); }
 
-function hideError() {
-  document.getElementById('error-msg').classList.add('hidden');
-}
-
-function showResults() {
-  document.getElementById('results-section').classList.remove('hidden');
-}
-
-function hideResults() {
-  document.getElementById('results-section').classList.add('hidden');
-}
-
-// ── Init ───────────────────────────────────────────────────────────────────────
+// ── Init ──────────────────────────────────────────────────────────────────────
 loadKakaoSDK()
   .then(function () {
-    // Default center: central Seoul
     map = new kakao.maps.Map(document.getElementById('map'), {
       center: new kakao.maps.LatLng(37.5665, 126.9780),
       level: 8
     });
 
-    var btn = document.getElementById('search-btn');
-    btn.addEventListener('click', handleSearch);
+    document.getElementById('search-btn').addEventListener('click', handleSearch);
 
-    // Let the user press Enter in either input to trigger the search
     ['addr1', 'addr2'].forEach(function (id) {
       document.getElementById(id).addEventListener('keydown', function (e) {
         if (e.key === 'Enter') handleSearch();
@@ -252,4 +246,3 @@ loadKakaoSDK()
       err.message.replace(/\n/g, '<br>') +
       '</div>';
   });
-

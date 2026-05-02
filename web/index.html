@@ -13,28 +13,49 @@
     <p class="subtitle">(description)</p>
   </header>
 
-  <main>
-    <section class="search-card">
-      <div class="input-group">
-        <label for="addr1">Point 1</label>
-        <input type="text" id="addr1" placeholder="예: 강남역" autocomplete="off">
-      </div>
-      <div class="input-group">
-        <label for="addr2">Point 2</label>
-        <input type="text" id="addr2" placeholder="예: 수원역" autocomplete="off">
-      </div>
-      <button id="search-btn">Find midpoint</button>
-    </section>
+  <div class="page-body">
+    <main>
+      <section class="search-card">
+        <div class="input-group">
+          <label for="addr1">Point 1</label>
+          <input type="text" id="addr1" placeholder="예: 강남역" autocomplete="off">
+        </div>
+        <div class="input-group">
+          <label for="addr2">Point 2</label>
+          <input type="text" id="addr2" placeholder="예: 수원역" autocomplete="off">
+        </div>
+        <button id="search-btn">Find midpoint</button>
+      </section>
 
-    <p id="error-msg" class="error-msg hidden"></p>
+      <p id="error-msg" class="error-msg hidden"></p>
 
-    <div id="map"></div>
+      <div id="map"></div>
 
-    <section id="results-section" class="hidden">
-      <h2 class="results-heading">Near Cafe(s) <span id="results-count"></span></h2>
-      <ul id="cafe-list"></ul>
-    </section>
-  </main>
+      <section id="results-section" class="hidden">
+        <h2 class="results-heading">Nearby <span id="results-count"></span></h2>
+        <ul id="place-list"></ul>
+      </section>
+    </main>
+
+    <aside class="filter-panel">
+      <p class="filter-title">Filter</p>
+      <label class="filter-item">
+        <input class="filter-check" type="checkbox" value="CE7" checked>
+        <span class="filter-dot" style="background:#43AA8B"></span>
+        Cafe
+      </label>
+      <label class="filter-item">
+        <input class="filter-check" type="checkbox" value="FD6" checked>
+        <span class="filter-dot" style="background:#F4A261"></span>
+        Restaurant
+      </label>
+      <label class="filter-item">
+        <input class="filter-check" type="checkbox" value="SW8" checked>
+        <span class="filter-dot" style="background:#9B5DE5"></span>
+        Station
+      </label>
+    </aside>
+  </div>
 
   <!--
     config.js is gitignored.
