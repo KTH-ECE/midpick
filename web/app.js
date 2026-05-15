@@ -115,7 +115,7 @@ function renderLocationInputs(n) {
     var input = document.createElement('input');
     input.type = 'text';
     input.id = 'addr' + i;
-    input.placeholder = '예: 강남역';
+    input.placeholder = '예: 성균관대역';
     input.autocomplete = 'off';
     input.addEventListener('keydown', function (e) {
       if (e.key === 'Enter') handleSearch();
@@ -261,8 +261,8 @@ function hideResults() { document.getElementById('results-section').classList.ad
 loadKakaoSDK()
   .then(function () {
     map = new kakao.maps.Map(document.getElementById('map'), {
-      center: new kakao.maps.LatLng(37.5665, 126.9780),
-      level: 8
+      center: new kakao.maps.LatLng(37.2937156, 126.9743370),
+      level: 4
     });
 
     renderLocationInputs(locationCount);
@@ -281,7 +281,7 @@ loadKakaoSDK()
       searchRadius = parseInt(this.value) * 1000;
       radiusVal.textContent = this.value + 'km';
     });
-    
+
     document.getElementById('search-btn').addEventListener('click', handleSearch);
   })
   .catch(function (err) {
