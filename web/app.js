@@ -275,6 +275,13 @@ loadKakaoSDK()
       renderLocationInputs(locationCount);
     });
     
+    var radiusSlider = document.getElementById('radius-km');
+    var radiusVal = document.getElementById('radius-km-val');
+    radiusSlider.addEventListener('input', function () {
+      searchRadius = parseInt(this.value) * 1000;
+      radiusVal.textContent = this.value + 'km';
+    });
+    
     document.getElementById('search-btn').addEventListener('click', handleSearch);
   })
   .catch(function (err) {
