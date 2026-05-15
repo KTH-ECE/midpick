@@ -1,6 +1,6 @@
 // ── Config ────────────────────────────────────────────────────────────────────
 var CATEGORIES = {
-  CE7: { label: 'Cafe',       color: '#43AA8B' },
+  CE7: { label: 'Cafe',       color: '#d4bb4b' },
   FD6: { label: 'Restaurant', color: '#F4A261' },
   SW8: { label: 'Station',    color: '#9B5DE5' }
 };
@@ -32,6 +32,7 @@ function loadKakaoSDK() {
 var map;
 var markers = [];
 var openInfoWindow = null;
+var locationCount = 2;
 
 // ── Markers ───────────────────────────────────────────────────────────────────
 function clearMarkers() {
@@ -98,14 +99,47 @@ function getSelectedCategories() {
   return Array.prototype.map.call(checked, function (el) { return el.value; });
 }
 
+// ── Location inputs ───────────────────────────────────────────────────────────
+function renderLocationInputs(n) {
+  var container = document.getElementById('location-inputs');
+  container.innerHTML = '';
+  for (var i = 1; i <= n; i++) {
+    var group = document.createElement('div');
+    group.className = 'input-group';
+
+    var label = document.createElement('label');
+    label.setAttribute('for', 'addr' + i);
+    label.textContent = 'Point ' + i;
+
+    var input = document.createElement('input');
+    input.type = 'text';
+    input.id = 'addr' + i;
+    input.placeholder = '예: 강남역';
+    input.autocomplete = 'off';
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') handleSearch();
+    });
+
+    group.appendChild(label);
+    group.appendChild(input);
+    container.appendChild(group);
+  }
+}
+
 // ── Handler ───────────────────────────────────────────────────────────────────
 function handleSearch() {
-  var addr1    = document.getElementById('addr1').value.trim();
-  var addr2    = document.getElementById('addr2').value.trim();
+  var addrs = [];
+  for (var i = 1; i <= locationCount; i++) {
+    var val = document.getElementById('addr' + i).value.trim();
+    addrs.push(val);
+  }
   var btn      = document.getElementById('search-btn');
   var selected = getSelectedCategories();
 
-  if (!addr1 || !addr2) { showError('두 위치를 모두 입력해주세요.'); return; }
+  if (addrs.some(function (a) { return !a; })) {
+    showError('모든 위치를 입력해주세요. (' + locationCount + ' points required)');
+    return;
+  }
   if (selected.length === 0) { showError('필터를 하나 이상 선택해주세요.'); return; }
 
   btn.disabled = true;
@@ -113,20 +147,20 @@ function handleSearch() {
   hideError();
   hideResults();
 
-  Promise.all([searchLocation(addr1), searchLocation(addr2)])
+  Promise.all(addrs.map(searchLocation))
     .then(function (coords) {
-      var c1 = coords[0], c2 = coords[1];
-      var midLat    = (c1.lat + c2.lat) / 2;
-      var midLng    = (c1.lng + c2.lng) / 2;
+      var midLat = coords.reduce(function (s, c) { return s + c.lat; }, 0) / coords.length;
+      var midLng = coords.reduce(function (s, c) { return s + c.lng; }, 0) / coords.length;
       var midLatLng = new kakao.maps.LatLng(midLat, midLng);
 
       clearMarkers();
       map.setCenter(midLatLng);
       map.setLevel(7);
 
-      makeMarker(new kakao.maps.LatLng(c1.lat, c1.lng), c1.name, '#4361EE');
-      makeMarker(new kakao.maps.LatLng(c2.lat, c2.lng), c2.name, '#4361EE');
-      makeMarker(midLatLng, '중간 지점', '#E63946');
+      coords.forEach(function (c) {
+        makeMarker(new kakao.maps.LatLng(c.lat, c.lng), c.name, '#4361EE');
+      });
+      makeMarker(midLatLng, '중간 지점', '#5dd639');
 
       return Promise.all(selected.map(function (code) {
         return searchCategory(code, midLatLng);
@@ -230,13 +264,17 @@ loadKakaoSDK()
       level: 8
     });
 
-    document.getElementById('search-btn').addEventListener('click', handleSearch);
+    renderLocationInputs(locationCount);
 
-    ['addr1', 'addr2'].forEach(function (id) {
-      document.getElementById(id).addEventListener('keydown', function (e) {
-        if (e.key === 'Enter') handleSearch();
-      });
+    var slider   = document.getElementById('loc-count');
+    var sliderVal = document.getElementById('loc-count-val');
+    slider.addEventListener('input', function () {
+      locationCount = parseInt(this.value);
+      sliderVal.textContent = locationCount;
+      renderLocationInputs(locationCount);
     });
+    
+    document.getElementById('search-btn').addEventListener('click', handleSearch);
   })
   .catch(function (err) {
     document.body.innerHTML =

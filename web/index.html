@@ -16,14 +16,7 @@
   <div class="page-body">
     <main>
       <section class="search-card">
-        <div class="input-group">
-          <label for="addr1">Point 1</label>
-          <input type="text" id="addr1" placeholder="예: 강남역" autocomplete="off">
-        </div>
-        <div class="input-group">
-          <label for="addr2">Point 2</label>
-          <input type="text" id="addr2" placeholder="예: 수원역" autocomplete="off">
-        </div>
+        <div id="location-inputs"></div>
         <button id="search-btn">Find midpoint</button>
       </section>
 
@@ -38,6 +31,14 @@
     </main>
 
     <aside class="filter-panel">
+            <p class="filter-title">Locations</p>
+      <div class="slider-row">
+        <input type="range" id="loc-count" min="2" max="7" value="2">
+        <span class="slider-val" id="loc-count-val">2</span>
+      </div>
+
+      <hr class="filter-divider">
+
       <p class="filter-title">Filter</p>
       <label class="filter-item">
         <input class="filter-check" type="checkbox" value="CE7" checked>
