@@ -10,6 +10,6 @@
 
 **v2**
 - changes/improvements:
-        1. filter panel added; cafe/restaurant/station/slider(number of locations).
+        1. filter panel added; cafe/restaurant/station/slider(number of locations)/slider(search radius).
         2. each category coloured differently.
         3. 

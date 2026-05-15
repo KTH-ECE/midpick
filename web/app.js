@@ -33,6 +33,7 @@ var map;
 var markers = [];
 var openInfoWindow = null;
 var locationCount = 2;
+var searchRadius = 2000;
 
 // ── Markers ───────────────────────────────────────────────────────────────────
 function clearMarkers() {
@@ -175,7 +176,7 @@ function handleSearch() {
       all.sort(function (a, b) { return parseInt(a.distance) - parseInt(b.distance); });
 
       if (all.length === 0) {
-        showError('반경 2km 내에 결과를 찾을 수 없습니다. 다른 위치로 시도해보세요.');
+        showError('반경 내에 결과를 찾을 수 없습니다. 다른 위치로 시도해보세요.');
         return;
       }
       renderPlaces(all);
