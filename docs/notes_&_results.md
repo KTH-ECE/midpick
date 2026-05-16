@@ -27,3 +27,9 @@
         4. bias / fairness change; able to decide/adjust percentage bias towards each person (high % = closer); e.g. if bias set to person1 40% person2 30% person3 30%, person1 is will be closest to midpoint.
         5. more categories in filter panel; convenience store / bar / study cafe / pc game room / gas station / ev charging station / accomodation / hospital / cinema & entertainment / shopping mall
         6. fix/pin point(s) while changing number of input locations; a small light gray pin symbol on top right corner of each text box; slider can't be decreased if number of pinned location > number of input locations.
+
+**v3**
+- changes/improvements:
+        1. 7 more categories added
+                - convenience store / study cafe / gas & ev station / cinema & entertainment / accomodation / hospital / shopping
+        2. 
