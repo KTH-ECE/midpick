@@ -1,8 +1,15 @@
 // ── Config ────────────────────────────────────────────────────────────────────
 var CATEGORIES = {
-  CE7: { label: 'Cafe',       color: '#d4bb4b' },
+  CE7: { label: 'Cafe', color: '#d4bb4b' },
   FD6: { label: 'Restaurant', color: '#F4A261' },
-  SW8: { label: 'Station',    color: '#9B5DE5' }
+  SW8: { label: 'Station', color: '#9B5DE5' },
+  CS2: { label: 'Convenience', color: '#2196F3' },
+  AC5: { label: 'Study Cafe', color: '#795548' },
+  OL7: { label: 'Gas / EV', color: '#FF5722' },
+  CT1: { label: 'Entertainment', color: '#E91E63' },
+  AD5: { label: 'Accommodation', color: '#607D8B' },
+  HP8: { label: 'Hospital', color: '#F44336' },
+  MT1: { label: 'Shopping', color: '#009688' }
 };
 
 // ── SDK ───────────────────────────────────────────────────────────────────────
@@ -91,7 +98,7 @@ function searchCategory(code, midLatLng) {
       } else {
         resolve([]);
       }
-    }, { location: midLatLng, radius: 2000, sort: kakao.maps.services.SortBy.DISTANCE });
+    }, { location: midLatLng, radius: searchRadius, sort: kakao.maps.services.SortBy.DISTANCE });
   });
 }
 
