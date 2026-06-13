@@ -41,4 +41,8 @@
         4. language toggle added (en / ko)
                 - small pill toggle on top-right of header; toggle, not dropdown.
                 - switches all ui text live (header, filters, results, errors); default english.
-                - choice remembered via localStorage. map tiles still korean (kakao limitation). 
+                - choice remembered via localStorage. map tiles still korean (kakao limitation).
+        5. custom (brand/name) search added
+                - text box in filter panel; e.g. "Starbucks".
+                - keyword search around midpoint within radius; works with or without category filters.
+                - custom hits tagged "custom" (dark marker), de-duplicated against category results. 
