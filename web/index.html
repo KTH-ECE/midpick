@@ -9,8 +9,12 @@
 <body>
 
   <header>
+    <div class="lang-toggle">
+      <button type="button" class="lang-opt" data-lang="en">EN</button>
+      <button type="button" class="lang-opt" data-lang="ko">한</button>
+    </div>
     <h1>MidPick</h1>
-    <p class="subtitle">(description)</p>
+    <p class="subtitle" data-i18n="subtitle">Find the midpoint between you and your friends.</p>
   </header>
 
   <div class="page-body">
@@ -24,21 +28,21 @@
 
       <div id="map"></div>
 
-      <div id="midpoint-box" class="midpoint-box hidden" title="Click to copy midpoint">
+      <div id="midpoint-box" class="midpoint-box hidden">
         <span class="midpoint-icon" aria-hidden="true">📍</span>
         <span id="midpoint-value" class="midpoint-value"></span>
-        <span class="midpoint-copy-hint">Click to copy</span>
-        <span id="copied-toast" class="copied-toast">Copied!</span>
+        <span class="midpoint-copy-hint" data-i18n="copyHint">Click to copy</span>
+        <span id="copied-toast" class="copied-toast" data-i18n="copied">Copied!</span>
       </div>
 
       <section id="results-section" class="hidden">
-        <h2 class="results-heading">Nearby <span id="results-count"></span></h2>
+        <h2 class="results-heading"><span data-i18n="nearby">Nearby</span> <span id="results-count"></span></h2>
         <ul id="place-list"></ul>
       </section>
     </main>
 
     <aside class="filter-panel">
-      <p class="filter-title">Locations</p>
+      <p class="filter-title" data-i18n="locations">Locations</p>
       <div class="slider-row">
         <input type="range" id="loc-count" min="2" max="7" value="2">
         <span class="slider-val" id="loc-count-val">2</span>
@@ -46,7 +50,7 @@
 
       <hr class="filter-divider">
 
-      <p class="filter-title">Search radius</p>
+      <p class="filter-title" data-i18n="radius">Search radius</p>
       <div class="slider-row">
         <input type="range" id="radius-km" min="1" max="5" value="2">
         <span class="slider-val" id="radius-km-val">2km</span>
@@ -54,56 +58,56 @@
 
       <hr class="filter-divider">
 
-      <p class="filter-title">Filter</p>
+      <p class="filter-title" data-i18n="filter">Filter</p>
       <label class="filter-item">
         <input class="filter-check" type="checkbox" value="CE7" checked>
         <span class="filter-dot" style="background:#43AA8B"></span>
-        Cafe
+        <span data-i18n="filt_CE7">Cafe</span>
       </label>
       <label class="filter-item">
         <input class="filter-check" type="checkbox" value="FD6" checked>
         <span class="filter-dot" style="background:#F4A261"></span>
-        Restaurant
+        <span data-i18n="filt_FD6">Restaurant</span>
       </label>
       <label class="filter-item">
         <input class="filter-check" type="checkbox" value="SW8" checked>
         <span class="filter-dot" style="background:#9B5DE5"></span>
-        Station
+        <span data-i18n="filt_SW8">Station</span>
       </label>
       <label class="filter-item">
         <input class="filter-check" type="checkbox" value="CS2">
         <span class="filter-dot" style="background:#2196F3"></span>
-        Convenience Store
+        <span data-i18n="filt_CS2">Convenience Store</span>
       </label>
       <label class="filter-item">
         <input class="filter-check" type="checkbox" value="AC5">
         <span class="filter-dot" style="background:#795548"></span>
-        Study Cafe
+        <span data-i18n="filt_AC5">Study Cafe</span>
       </label>
       <label class="filter-item">
         <input class="filter-check" type="checkbox" value="OL7">
         <span class="filter-dot" style="background:#FF5722"></span>
-        Gas / EV Station
+        <span data-i18n="filt_OL7">Gas / EV Station</span>
       </label>
       <label class="filter-item">
         <input class="filter-check" type="checkbox" value="CT1">
         <span class="filter-dot" style="background:#E91E63"></span>
-        Cinema &amp; Entertainment
+        <span data-i18n="filt_CT1">Cinema &amp; Entertainment</span>
       </label>
       <label class="filter-item">
         <input class="filter-check" type="checkbox" value="AD5">
         <span class="filter-dot" style="background:#607D8B"></span>
-        Accommodation
+        <span data-i18n="filt_AD5">Accommodation</span>
       </label>
       <label class="filter-item">
         <input class="filter-check" type="checkbox" value="HP8">
         <span class="filter-dot" style="background:#F44336"></span>
-        Hospital
+        <span data-i18n="filt_HP8">Hospital</span>
       </label>
       <label class="filter-item">
         <input class="filter-check" type="checkbox" value="MT1">
         <span class="filter-dot" style="background:#009688"></span>
-        Shopping
+        <span data-i18n="filt_MT1">Shopping</span>
       </label>
     </aside>
   </div>

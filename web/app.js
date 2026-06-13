@@ -1,16 +1,129 @@
 // ── Config ────────────────────────────────────────────────────────────────────
+// Short labels (used on map markers / result tags); full names live in I18N.filt_*
 var CATEGORIES = {
-  CE7: { label: 'Cafe', color: '#d4bb4b' },
-  FD6: { label: 'Restaurant', color: '#F4A261' },
-  SW8: { label: 'Station', color: '#9B5DE5' },
-  CS2: { label: 'Convenience', color: '#2196F3' },
-  AC5: { label: 'Study Cafe', color: '#795548' },
-  OL7: { label: 'Gas / EV', color: '#FF5722' },
-  CT1: { label: 'Entertainment', color: '#E91E63' },
-  AD5: { label: 'Accommodation', color: '#607D8B' },
-  HP8: { label: 'Hospital', color: '#F44336' },
-  MT1: { label: 'Shopping', color: '#009688' }
+  CE7: { en: 'Cafe',          ko: '카페',        color: '#d4bb4b' },
+  FD6: { en: 'Restaurant',    ko: '음식점',      color: '#F4A261' },
+  SW8: { en: 'Station',       ko: '지하철역',    color: '#9B5DE5' },
+  CS2: { en: 'Convenience',   ko: '편의점',      color: '#2196F3' },
+  AC5: { en: 'Study Cafe',    ko: '스터디카페',  color: '#795548' },
+  OL7: { en: 'Gas / EV',      ko: '주유·충전',   color: '#FF5722' },
+  CT1: { en: 'Entertainment', ko: '문화시설',    color: '#E91E63' },
+  AD5: { en: 'Accommodation', ko: '숙박',        color: '#607D8B' },
+  HP8: { en: 'Hospital',      ko: '병원',        color: '#F44336' },
+  MT1: { en: 'Shopping',      ko: '쇼핑',        color: '#009688' }
 };
+
+// ── i18n ──────────────────────────────────────────────────────────────────────
+var currentLang = 'en';
+
+var I18N = {
+  en: {
+    subtitle: 'Find the midpoint between you and your friends.',
+    locations: 'Locations',
+    radius: 'Search radius',
+    filter: 'Filter',
+    nearby: 'Nearby',
+    copyHint: 'Click to copy',
+    copied: 'Copied!',
+    view: 'View',
+    viewKakao: 'View on KakaoMap →',
+    find: 'Find midpoint',
+    searching: 'Searching…',
+    midpoint: 'Midpoint',
+    point: 'Point',
+    placeholder: 'e.g. Gangnam Station',
+    errSelectFilter: 'Please select at least one filter.',
+    errNoResults: 'No results found within the radius. Try different locations.',
+    filt_CE7: 'Cafe',
+    filt_FD6: 'Restaurant',
+    filt_SW8: 'Station',
+    filt_CS2: 'Convenience Store',
+    filt_AC5: 'Study Cafe',
+    filt_OL7: 'Gas / EV Station',
+    filt_CT1: 'Cinema & Entertainment',
+    filt_AD5: 'Accommodation',
+    filt_HP8: 'Hospital',
+    filt_MT1: 'Shopping'
+  },
+  ko: {
+    subtitle: '당신과 친구들의 중간 지점을 찾아보세요.',
+    locations: '위치 수',
+    radius: '검색 반경',
+    filter: '필터',
+    nearby: '주변',
+    copyHint: '클릭하여 복사',
+    copied: '복사됨!',
+    view: '보기',
+    viewKakao: '카카오맵에서 보기 →',
+    find: '중간 지점 찾기',
+    searching: '검색 중…',
+    midpoint: '중간 지점',
+    point: '지점',
+    placeholder: '예: 강남역',
+    errSelectFilter: '필터를 하나 이상 선택해주세요.',
+    errNoResults: '반경 내에 결과를 찾을 수 없습니다. 다른 위치로 시도해보세요.',
+    filt_CE7: '카페',
+    filt_FD6: '음식점',
+    filt_SW8: '지하철역',
+    filt_CS2: '편의점',
+    filt_AC5: '스터디카페',
+    filt_OL7: '주유소·충전소',
+    filt_CT1: '영화·문화시설',
+    filt_AD5: '숙박',
+    filt_HP8: '병원',
+    filt_MT1: '쇼핑'
+  }
+};
+
+function t(key) { return I18N[currentLang][key]; }
+function catLabel(code) { return CATEGORIES[code][currentLang]; }
+
+// strings with interpolation / language-specific word order
+function distanceText(d) {
+  return currentLang === 'ko' ? '중간 지점에서 ' + d + 'm' : d + 'm from midpoint';
+}
+function msgAllLocations(n) {
+  return currentLang === 'ko'
+    ? '모든 위치를 입력해주세요. (' + n + '개 지점 필요)'
+    : 'Please enter all locations. (' + n + ' points required)';
+}
+function msgNotFound(kw) {
+  return currentLang === 'ko'
+    ? '"' + kw + '" 위치를 찾을 수 없습니다. 다시 입력해주세요.'
+    : 'Could not find "' + kw + '". Please try again.';
+}
+
+function applyLanguage(lang) {
+  currentLang = lang;
+  try { localStorage.setItem('midpick_lang', lang); } catch (e) { /* ignore */ }
+  document.documentElement.lang = lang;
+
+  // static text nodes flagged with data-i18n
+  Array.prototype.forEach.call(document.querySelectorAll('[data-i18n]'), function (el) {
+    var val = I18N[lang][el.getAttribute('data-i18n')];
+    if (val != null) el.textContent = val;
+  });
+
+  // point labels + input placeholders (preserve whatever the user has typed)
+  Array.prototype.forEach.call(document.querySelectorAll('#location-inputs label'), function (el, i) {
+    el.textContent = t('point') + ' ' + (i + 1);
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('#location-inputs input'), function (el) {
+    el.placeholder = t('placeholder');
+  });
+
+  // search button, only when idle (leave the "Searching…" label alone mid-search)
+  var btn = document.getElementById('search-btn');
+  if (btn && !btn.disabled) btn.textContent = t('find');
+
+  // toggle highlight
+  Array.prototype.forEach.call(document.querySelectorAll('.lang-opt'), function (el) {
+    el.classList.toggle('active', el.getAttribute('data-lang') === lang);
+  });
+
+  // re-render the result list (cat tags / distance / "View") in the new language
+  if (lastPlaces) renderPlaceList(lastPlaces);
+}
 
 // ── SDK ───────────────────────────────────────────────────────────────────────
 function loadKakaoSDK() {
@@ -44,6 +157,7 @@ var locationCount = 2;
 var searchRadius = 2000;
 var midpointCopyText = '';
 var toastTimer = null;
+var lastPlaces = null;
 
 // ── Markers ───────────────────────────────────────────────────────────────────
 function clearMarkers() {
@@ -85,7 +199,7 @@ function searchLocation(keyword) {
           name: results[0].place_name || keyword
         });
       } else {
-        reject(new Error('Could not find "' + keyword + '". Please try again.'));
+        reject(new Error(msgNotFound(keyword)));
       }
     });
   });
@@ -120,12 +234,12 @@ function renderLocationInputs(n) {
 
     var label = document.createElement('label');
     label.setAttribute('for', 'addr' + i);
-    label.textContent = 'Point ' + i;
+    label.textContent = t('point') + ' ' + i;
 
     var input = document.createElement('input');
     input.type = 'text';
     input.id = 'addr' + i;
-    input.placeholder = 'e.g. Gangnam Station';
+    input.placeholder = t('placeholder');
     input.autocomplete = 'off';
     input.addEventListener('keydown', function (e) {
       if (e.key === 'Enter') handleSearch();
@@ -148,13 +262,13 @@ function handleSearch() {
   var selected = getSelectedCategories();
 
   if (addrs.some(function (a) { return !a; })) {
-    showError('Please enter all locations. (' + locationCount + ' points required)');
+    showError(msgAllLocations(locationCount));
     return;
   }
-  if (selected.length === 0) { showError('Please select at least one filter.'); return; }
+  if (selected.length === 0) { showError(t('errSelectFilter')); return; }
 
   btn.disabled = true;
-  btn.textContent = 'Searching…';
+  btn.textContent = t('searching');
   hideError();
   hideResults();
   hideMidpoint();
@@ -173,7 +287,7 @@ function handleSearch() {
       coords.forEach(function (c) {
         makeMarker(new kakao.maps.LatLng(c.lat, c.lng), c.name, '#4361EE');
       });
-      makeMarker(midLatLng, 'Midpoint', '#5dd639');
+      makeMarker(midLatLng, t('midpoint'), '#5dd639');
 
       return Promise.all(selected.map(function (code) {
         return searchCategory(code, midLatLng);
@@ -181,27 +295,59 @@ function handleSearch() {
     })
     .then(function (resultsPerCategory) {
       btn.disabled = false;
-      btn.textContent = 'Find midpoint';
+      btn.textContent = t('find');
 
       var all = [];
       resultsPerCategory.forEach(function (results) { all = all.concat(results); });
       all.sort(function (a, b) { return parseInt(a.distance) - parseInt(b.distance); });
 
       if (all.length === 0) {
-        showError('No results found within the radius. Try different locations.');
+        showError(t('errNoResults'));
         return;
       }
       renderPlaces(all);
     })
     .catch(function (err) {
       btn.disabled = false;
-      btn.textContent = 'Find midpoint';
+      btn.textContent = t('find');
       showError(err.message);
     });
 }
 
 // ── Render ────────────────────────────────────────────────────────────────────
 function renderPlaces(places) {
+  lastPlaces = places;
+
+  // markers (kept across language switches; the list is what gets re-rendered)
+  places.forEach(function (place) {
+    var pos    = new kakao.maps.LatLng(parseFloat(place.y), parseFloat(place.x));
+    var marker = makeMarker(pos, place.place_name, CATEGORIES[place._categoryCode].color);
+    place._marker = marker;
+    place._pos    = pos;
+    kakao.maps.event.addListener(marker, 'click', function () {
+      openPlaceInfo(place, marker);
+    });
+  });
+
+  renderPlaceList(places);
+  showResults();
+}
+
+function openPlaceInfo(place, marker) {
+  if (openInfoWindow) openInfoWindow.close();
+  openInfoWindow = new kakao.maps.InfoWindow({
+    content:
+      '<div style="padding:8px 10px;font-size:13px;max-width:220px;line-height:1.5">' +
+      '<strong>' + place.place_name + '</strong><br>' +
+      (place.road_address_name || place.address_name) + '<br>' +
+      '<a href="' + place.place_url + '" target="_blank" rel="noopener" ' +
+      'style="color:#4361EE">' + t('viewKakao') + '</a>' +
+      '</div>'
+  });
+  openInfoWindow.open(map, marker);
+}
+
+function renderPlaceList(places) {
   var list  = document.getElementById('place-list');
   var count = document.getElementById('results-count');
 
@@ -209,29 +355,12 @@ function renderPlaces(places) {
   count.textContent = '(' + places.length + ')';
 
   places.forEach(function (place, i) {
-    var cat    = CATEGORIES[place._categoryCode];
-    var pos    = new kakao.maps.LatLng(parseFloat(place.y), parseFloat(place.x));
-    var marker = makeMarker(pos, place.place_name, cat.color);
-
-    kakao.maps.event.addListener(marker, 'click', function () {
-      if (openInfoWindow) openInfoWindow.close();
-      openInfoWindow = new kakao.maps.InfoWindow({
-        content:
-          '<div style="padding:8px 10px;font-size:13px;max-width:220px;line-height:1.5">' +
-          '<strong>' + place.place_name + '</strong><br>' +
-          (place.road_address_name || place.address_name) + '<br>' +
-          '<a href="' + place.place_url + '" target="_blank" rel="noopener" ' +
-          'style="color:#4361EE">View on KakaoMap →</a>' +
-          '</div>'
-      });
-      openInfoWindow.open(map, marker);
-    });
-
-    var li = document.createElement('li');
+    var cat = CATEGORIES[place._categoryCode];
+    var li  = document.createElement('li');
     li.className = 'place-item';
 
     var distText = place.distance
-      ? '<span class="place-distance">' + place.distance + 'm from midpoint</span>'
+      ? '<span class="place-distance">' + distanceText(place.distance) + '</span>'
       : '';
 
     li.innerHTML =
@@ -239,24 +368,22 @@ function renderPlaces(places) {
       '<div class="place-info">' +
         '<div class="place-name-row">' +
           '<strong class="place-name">' + place.place_name + '</strong>' +
-          '<span class="cat-tag" style="background:' + cat.color + '">' + cat.label + '</span>' +
+          '<span class="cat-tag" style="background:' + cat.color + '">' + catLabel(place._categoryCode) + '</span>' +
         '</div>' +
         '<span class="place-address">' + (place.road_address_name || place.address_name) + '</span>' +
         distText +
       '</div>' +
       '<a class="place-link" href="' + place.place_url + '" ' +
          'target="_blank" rel="noopener" ' +
-         'onclick="event.stopPropagation()">View</a>';
+         'onclick="event.stopPropagation()">' + t('view') + '</a>';
 
     li.addEventListener('click', function () {
-      map.panTo(pos);
-      kakao.maps.event.trigger(marker, 'click');
+      if (place._pos) map.panTo(place._pos);
+      if (place._marker) kakao.maps.event.trigger(place._marker, 'click');
     });
 
     list.appendChild(li);
   });
-
-  showResults();
 }
 
 // ── Midpoint box ──────────────────────────────────────────────────────────────
@@ -326,6 +453,19 @@ function hideError()   { document.getElementById('error-msg').classList.add('hid
 function showResults() { document.getElementById('results-section').classList.remove('hidden'); }
 function hideResults() { document.getElementById('results-section').classList.add('hidden'); }
 
+// ── Language toggle (works immediately, independent of the map loading) ─────────
+(function initLanguage() {
+  var saved;
+  try { saved = localStorage.getItem('midpick_lang'); } catch (e) { /* ignore */ }
+  currentLang = (saved === 'ko' || saved === 'en') ? saved : 'en';
+
+  Array.prototype.forEach.call(document.querySelectorAll('.lang-opt'), function (el) {
+    el.addEventListener('click', function () { applyLanguage(el.getAttribute('data-lang')); });
+  });
+
+  applyLanguage(currentLang);
+})();
+
 // ── Init ──────────────────────────────────────────────────────────────────────
 loadKakaoSDK()
   .then(function () {
@@ -344,7 +484,7 @@ loadKakaoSDK()
       sliderVal.textContent = locationCount;
       renderLocationInputs(locationCount);
     });
-    
+
     var radiusSlider = document.getElementById('radius-km');
     var radiusVal = document.getElementById('radius-km-val');
     radiusSlider.addEventListener('input', function () {

@@ -28,10 +28,45 @@ body {
 }
 
 header {
+  position: relative;
   background: var(--accent);
   color: #fff;
   text-align: center;
   padding: 2rem 1rem 1.6rem;
+}
+
+/* ── Language toggle ── */
+.lang-toggle {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  background: rgba(255, 255, 255, .18);
+  border-radius: 999px;
+}
+
+.lang-opt {
+  border: none;
+  background: transparent;
+  color: #fff;
+  font-family: inherit;
+  font-size: .78rem;
+  font-weight: 700;
+  padding: .25rem .65rem;
+  border-radius: 999px;
+  cursor: pointer;
+  opacity: .85;
+  transition: background .15s, color .15s, opacity .15s;
+}
+
+.lang-opt:hover { opacity: 1; }
+
+.lang-opt.active {
+  background: #fff;
+  color: var(--accent);
+  opacity: 1;
 }
 
 header h1 {
