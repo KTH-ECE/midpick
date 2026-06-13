@@ -1,52 +1,47 @@
+# MidPick — Notes & Results
 
+Web app that finds a fair midpoint between two or more people and shows the
+places nearby. Built on the Kakao Maps API.
 
-**v1**
-- ran in *Live Server*
-- as it find exact centre, sometimes it locates an unknow place like middle of forest where no cafes, or ... can be found.
-- appearance: blue and white; minimum text; small size map in centre; app name and short descripton appears on the top (medium size); when searched, two starting points marked with blue points, centre marked with red point, nearest cafes marked with green points.
-- functions: finding exact centre between two points; auto finds nearest *cafes* only.
-- searching:
-        - exactly same as kakaomap (any locations within South Korea works, e.g. streets, stations, road, ...).
-        - only cafes shown (range: 1km from midpoint).
-- possible improvements:
-        1. better describing sentence.
-        2. on-off filters (check-box; multiple check-boxes can be selected; e.g. cafes, restaurants, stations, different colours or shapes for categories).
-        3. language options (toggle: english and korean, auto change).
+- **Stack:** JavaScript · HTML · CSS (no build step)
+- **Run:** open `web/index.html` with VS Code Live Server
+- **API key:** Kakao Maps JS key in `web/config.js` (gitignored; copy from `config.example.js`)
 
-**v2**
-- changes/improvements:
-        1. filter panel added.
-                - cafe / restaurant / station
-                - slider1 (number of input locations; 1~7)
-                - slider2 (search radius; 1~5km)
-        2. each category coloured differently; no overlap.
-- possible improvements:
-        1. able to search for specific brand/name (= custom).
-        2. outputs copyable coordinate/address of midpoint when searched (thin box below map; copied when clicked; little 2sec popup box when with "Copied!" message when clicked).
-        3. "use my location"; a small box follows the text clicked text box floating on the left side; button; autofills current location when box clicked; need to ask permission to user.
-        4. bias / fairness change; able to decide/adjust percentage bias towards each person (high % = closer); e.g. if bias set to person1 40% person2 30% person3 30%, person1 is will be closest to midpoint.
-        5. more categories in filter panel; convenience store / bar / study cafe / pc game room / gas station / ev charging station / accomodation / hospital / cinema & entertainment / shopping mall
-        6. fix/pin point(s) while changing number of input locations; a small light gray pin symbol on top right corner of each text box; slider can't be decreased if number of pinned location > number of input locations.
+---
 
-**v3**
-- changes/improvements:
-        1. 7 more categories added
-                - convenience store / study cafe / gas & ev station / cinema & entertainment / accomodation / hospital / shopping
-        2. copyable midpoint box added
-                - thin box below map; shows midpoint address + coordinate when searched.
-                - click to copy; small "Copied!" popup appears for 2sec.
-        3. default language set to english
-                - all ui text translated to english; html lang="en".
-                - note: kakao map tiles/labels stay korean (js sdk has no english option).
-        4. language toggle added (en / ko)
-                - small pill toggle on top-right of header; toggle, not dropdown.
-                - switches all ui text live (header, filters, results, errors); default english.
-                - choice remembered via localStorage. map tiles still korean (kakao limitation).
-        5. custom (brand/name) search added
-                - text box in filter panel; e.g. "Starbucks".
-                - keyword search around midpoint within radius; works with or without category filters.
-                - custom hits tagged "custom" (dark marker), de-duplicated against category results.
-        6. "use my location" added
-                - small floating pill follows the focused (empty) input on its left side.
-                - asks browser permission; reverse-geocodes gps to an address and autofills the box.
-                - needs a secure context (https or localhost) for geolocation to work. 
+## Version history
+
+### v1
+- Finds the exact centre between **two** points.
+- Auto-finds the nearest **cafes** only, within **1 km** of the midpoint.
+- Search behaves like KakaoMap — any location in South Korea (streets, stations, roads…).
+- Markers: start points (blue), midpoint (red), cafes (green).
+- Look: blue & white, minimal text, small centred map, title + short description on top.
+- *Known issue:* the exact centre can land where there's nothing nearby (e.g. middle of a forest).
+
+### v2
+- Added the **filter panel**:
+  - Categories — cafe / restaurant / station (each its own colour, no overlap).
+  - Slider — number of input locations (1–7).
+  - Slider — search radius (1–5 km).
+
+### v3 — current
+1. **More categories (10 total)** — added convenience store, study cafe, gas/EV station, cinema & entertainment, accommodation, hospital, shopping.
+2. **Copyable midpoint box** — thin box below the map shows the midpoint's address + coordinates; click to copy, with a 2-second "Copied!" popup.
+3. **English by default** — all UI text in English; `html lang="en"`. *(Kakao map tiles stay Korean — the JS SDK has no English option.)*
+4. **Language toggle (EN / KO)** — small pill at the top-right of the header; switches all UI text live; choice saved in `localStorage`.
+5. **Custom (brand/name) search** — text box in the filter panel (e.g. "Starbucks"); keyword search around the midpoint, with or without category filters. Custom hits get a dark "Custom" marker and are de-duplicated against category results.
+6. **Use my location** — a floating pill follows the focused (empty) input, sitting to its left; asks for browser permission, reverse-geocodes GPS to an address, and autofills the box. *(Needs https or localhost.)*
+
+---
+
+## Backlog — possible improvements
+- [ ] **Bias / fairness weighting** — adjust how close the midpoint sits to each person (e.g. P1 40% / P2 30% / P3 30% → P1 ends up closest).
+- [ ] **Pin / lock locations** — a small pin on each box keeps it fixed while changing the location count; the count slider can't drop below the number of pinned boxes.
+- [ ] **A few more categories** — e.g. bar, PC game room.
+
+---
+
+*Keep this file current: whenever a feature or improvement is added or changed,
+note it under the current version (or start a new version) and tick off the
+matching backlog item. Short entries — what changed, and any caveat.*
