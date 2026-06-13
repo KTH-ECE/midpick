@@ -17,8 +17,8 @@ function loadKakaoSDK() {
   return new Promise(function (resolve, reject) {
     if (typeof KAKAO_APP_KEY === 'undefined' || KAKAO_APP_KEY === 'YOUR_JAVASCRIPT_APP_KEY_HERE') {
       reject(new Error(
-        'config.js가 없거나 앱 키가 설정되지 않았습니다.\n' +
-        'config.example.js를 config.js로 복사한 뒤 Kakao JavaScript 앱 키를 입력해주세요.'
+        'config.js is missing or the app key is not set.\n' +
+        'Copy config.example.js to config.js and enter your Kakao JavaScript app key.'
       ));
       return;
     }
@@ -28,7 +28,7 @@ function loadKakaoSDK() {
       '//dapi.kakao.com/v2/maps/sdk.js?appkey=' + KAKAO_APP_KEY +
       '&libraries=services&autoload=false';
     script.onerror = function () {
-      reject(new Error('Kakao Maps SDK를 불러오지 못했습니다. 키와 허용 도메인을 확인해주세요.'));
+      reject(new Error('Failed to load the Kakao Maps SDK. Check your key and allowed domains.'));
     };
     script.onload = function () { kakao.maps.load(resolve); };
     document.head.appendChild(script);
@@ -85,7 +85,7 @@ function searchLocation(keyword) {
           name: results[0].place_name || keyword
         });
       } else {
-        reject(new Error('"' + keyword + '" 위치를 찾을 수 없습니다. 다시 입력해주세요.'));
+        reject(new Error('Could not find "' + keyword + '". Please try again.'));
       }
     });
   });
@@ -125,7 +125,7 @@ function renderLocationInputs(n) {
     var input = document.createElement('input');
     input.type = 'text';
     input.id = 'addr' + i;
-    input.placeholder = '예: 성균관대역';
+    input.placeholder = 'e.g. Gangnam Station';
     input.autocomplete = 'off';
     input.addEventListener('keydown', function (e) {
       if (e.key === 'Enter') handleSearch();
@@ -148,10 +148,10 @@ function handleSearch() {
   var selected = getSelectedCategories();
 
   if (addrs.some(function (a) { return !a; })) {
-    showError('모든 위치를 입력해주세요. (' + locationCount + ' points required)');
+    showError('Please enter all locations. (' + locationCount + ' points required)');
     return;
   }
-  if (selected.length === 0) { showError('필터를 하나 이상 선택해주세요.'); return; }
+  if (selected.length === 0) { showError('Please select at least one filter.'); return; }
 
   btn.disabled = true;
   btn.textContent = 'Searching…';
@@ -173,7 +173,7 @@ function handleSearch() {
       coords.forEach(function (c) {
         makeMarker(new kakao.maps.LatLng(c.lat, c.lng), c.name, '#4361EE');
       });
-      makeMarker(midLatLng, '중간 지점', '#5dd639');
+      makeMarker(midLatLng, 'Midpoint', '#5dd639');
 
       return Promise.all(selected.map(function (code) {
         return searchCategory(code, midLatLng);
@@ -188,7 +188,7 @@ function handleSearch() {
       all.sort(function (a, b) { return parseInt(a.distance) - parseInt(b.distance); });
 
       if (all.length === 0) {
-        showError('반경 내에 결과를 찾을 수 없습니다. 다른 위치로 시도해보세요.');
+        showError('No results found within the radius. Try different locations.');
         return;
       }
       renderPlaces(all);
@@ -221,7 +221,7 @@ function renderPlaces(places) {
           '<strong>' + place.place_name + '</strong><br>' +
           (place.road_address_name || place.address_name) + '<br>' +
           '<a href="' + place.place_url + '" target="_blank" rel="noopener" ' +
-          'style="color:#4361EE">카카오맵에서 보기 →</a>' +
+          'style="color:#4361EE">View on KakaoMap →</a>' +
           '</div>'
       });
       openInfoWindow.open(map, marker);
@@ -359,7 +359,7 @@ loadKakaoSDK()
     document.body.innerHTML =
       '<div style="max-width:500px;margin:4rem auto;padding:1.5rem;' +
       'font-family:sans-serif;background:#FEE2E2;border-radius:12px;color:#991B1B">' +
-      '<strong>앱을 불러올 수 없습니다</strong><br><br>' +
+      '<strong>Could not load the app</strong><br><br>' +
       err.message.replace(/\n/g, '<br>') +
       '</div>';
   });

@@ -34,4 +34,7 @@
                 - convenience store / study cafe / gas & ev station / cinema & entertainment / accomodation / hospital / shopping
         2. copyable midpoint box added
                 - thin box below map; shows midpoint address + coordinate when searched.
-                - click to copy; small "Copied!" popup appears for 2sec. 
+                - click to copy; small "Copied!" popup appears for 2sec.
+        3. default language set to english
+                - all ui text translated to english; html lang="en".
+                - note: kakao map tiles/labels stay korean (js sdk has no english option). 
