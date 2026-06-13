@@ -23,6 +23,10 @@ var I18N = {
     locations: 'Locations',
     radius: 'Search radius',
     filter: 'Filter',
+    resetTitle: 'Reset',
+    resetBias: 'Reset %',
+    clearPoints: 'Clear points',
+    clearFilters: 'Untick filters',
     nearby: 'Nearby',
     copyHint: 'Click to copy',
     copied: 'Copied!',
@@ -58,6 +62,10 @@ var I18N = {
     locations: '위치 수',
     radius: '검색 반경',
     filter: '필터',
+    resetTitle: '초기화',
+    resetBias: '비율 초기화',
+    clearPoints: '위치 비우기',
+    clearFilters: '필터 해제',
     nearby: '주변',
     copyHint: '클릭하여 복사',
     copied: '복사됨!',
@@ -618,6 +626,26 @@ function finishGeo(label) {
   hideGeoButton();
 }
 
+// ── Reset actions ───────────────────────────────────────────────────────────────
+function resetBias() {
+  Array.prototype.forEach.call(document.querySelectorAll('.weight-slider'), function (s) {
+    s.value = 50;
+  });
+  updateWeightLabels();
+}
+
+function clearPoints() {
+  Array.prototype.forEach.call(document.querySelectorAll('#location-inputs input[type="text"]'), function (el) {
+    el.value = '';
+  });
+}
+
+function clearFilters() {
+  Array.prototype.forEach.call(document.querySelectorAll('.filter-check'), function (el) {
+    el.checked = false;
+  });
+}
+
 // ── UI helpers ────────────────────────────────────────────────────────────────
 function showError(msg) {
   var el = document.getElementById('error-msg');
@@ -678,6 +706,9 @@ loadKakaoSDK()
     document.getElementById('custom-keyword').addEventListener('keydown', function (e) {
       if (e.key === 'Enter') handleSearch();
     });
+    document.getElementById('reset-bias').addEventListener('click', resetBias);
+    document.getElementById('clear-points').addEventListener('click', clearPoints);
+    document.getElementById('clear-filters').addEventListener('click', clearFilters);
   })
   .catch(function (err) {
     document.body.innerHTML =

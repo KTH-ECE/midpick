@@ -86,7 +86,7 @@ header h1 {
   display: flex;
   gap: 1.25rem;
   align-items: flex-start;
-  max-width: 900px;
+  max-width: 1100px;
   margin: 0 auto;
   padding: 1.5rem 1rem 3rem;
 }
@@ -100,7 +100,8 @@ main {
 }
 
 /* ── Filter panel ── */
-.filter-panel {
+.filter-panel,
+.reset-panel {
   width: 200px;
   flex-shrink: 0;
   background: var(--surface);
@@ -111,6 +112,24 @@ main {
   flex-direction: column;
   gap: .75rem;
 }
+
+/* ── Reset panel buttons ── */
+.reset-btn {
+  width: 100%;
+  padding: .5rem .6rem;
+  background: var(--bg);
+  color: var(--text);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: .82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color .15s, color .15s, transform .1s;
+}
+
+.reset-btn:hover { border-color: var(--accent); color: var(--accent); }
+.reset-btn:active { transform: scale(.98); }
 
 /* ── Search card ── */
 .search-card {
@@ -515,7 +534,9 @@ main {
   header h1 { font-size: 1.6rem; }
   #map { height: 300px; }
   .page-body { flex-direction: column; }
-  .filter-panel { width: 100%; flex-direction: row; flex-wrap: wrap; gap: .5rem 1.25rem; }
+  main { order: 1; }
+  .filter-panel { order: 2; width: 100%; flex-direction: row; flex-wrap: wrap; gap: .5rem 1.25rem; }
+  .reset-panel { order: 3; width: 100%; }
   .filter-title { width: 100%; }
   .place-item { padding: .75rem .85rem; }
 }
