@@ -506,15 +506,32 @@ function showCopiedToast() {
 
 // ── Use my location ─────────────────────────────────────────────────────────────
 function positionGeoButton(input) {
-  // float at the left side of the focused box, vertically centred
-  geoBtn.style.top  = (input.offsetTop + input.offsetHeight / 2) + 'px';
-  geoBtn.style.left = (input.offsetLeft + 6) + 'px';
+  var gap = 8;
+  var card     = geoBtn.offsetParent;            // .search-card (positioned)
+  var cardRect = card.getBoundingClientRect();
+  var inRect   = input.getBoundingClientRect();
+  // padding-box origin of the containing block, in viewport coords
+  var originLeft = cardRect.left + card.clientLeft;
+  var originTop  = cardRect.top  + card.clientTop;
+
+  var leftV = inRect.left - geoBtn.offsetWidth - gap;   // just left of the box
+  if (leftV >= 4) {
+    // room to the left: sit outside the box, vertically centred
+    geoBtn.style.left = (leftV - originLeft) + 'px';
+    geoBtn.style.top  = (inRect.top + inRect.height / 2 - originTop) + 'px';
+    geoBtn.style.transform = 'translateY(-50%)';
+  } else {
+    // narrow screen with no room: tuck just above the box, left-aligned
+    geoBtn.style.left = (inRect.left - originLeft) + 'px';
+    geoBtn.style.top  = (inRect.top - 6 - originTop) + 'px';
+    geoBtn.style.transform = 'translateY(-100%)';
+  }
 }
 
 function showGeoButton(input) {
   geoBtn._target = input;
+  geoBtn.classList.remove('hidden'); // unhide first so offsetWidth is measurable
   positionGeoButton(input);
-  geoBtn.classList.remove('hidden');
 }
 
 function hideGeoButton() {
