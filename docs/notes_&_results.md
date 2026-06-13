@@ -33,6 +33,7 @@ places nearby. Built on the Kakao Maps API.
 5. **Custom (brand/name) search** — text box in the filter panel (e.g. "Starbucks"); keyword search around the midpoint, with or without category filters. Custom hits get a dark "Custom" marker and are de-duplicated against category results.
 6. **Use my location** — a floating pill follows the focused (empty) input, sitting to its left; asks for browser permission, reverse-geocodes GPS to an address, and autofills the box. *(Needs https or localhost.)*
 7. **Bias / fairness weighting** — each Point box has a weight slider with a live %; the midpoint is a weighted average, so a higher % sits closer to that person. Equal sliders (the default) give the balanced centroid.
+8. **Reset panel (left)** — new side panel mirroring the filter panel, with small reset buttons: *Reset %* (bias back to equal), *Clear points* (empty the address boxes), *Untick filters*.
 
 ---
 
