@@ -37,10 +37,13 @@ function loadKakaoSDK() {
 
 // ── State ─────────────────────────────────────────────────────────────────────
 var map;
+var geocoder;
 var markers = [];
 var openInfoWindow = null;
 var locationCount = 2;
 var searchRadius = 2000;
+var midpointCopyText = '';
+var toastTimer = null;
 
 // ── Markers ───────────────────────────────────────────────────────────────────
 function clearMarkers() {
@@ -154,6 +157,7 @@ function handleSearch() {
   btn.textContent = 'Searching…';
   hideError();
   hideResults();
+  hideMidpoint();
 
   Promise.all(addrs.map(searchLocation))
     .then(function (coords) {
@@ -164,6 +168,7 @@ function handleSearch() {
       clearMarkers();
       map.setCenter(midLatLng);
       map.setLevel(7);
+      showMidpoint(midLat, midLng);
 
       coords.forEach(function (c) {
         makeMarker(new kakao.maps.LatLng(c.lat, c.lng), c.name, '#4361EE');
@@ -254,6 +259,63 @@ function renderPlaces(places) {
   showResults();
 }
 
+// ── Midpoint box ──────────────────────────────────────────────────────────────
+function showMidpoint(lat, lng) {
+  var box     = document.getElementById('midpoint-box');
+  var valueEl = document.getElementById('midpoint-value');
+  var coordStr = lat.toFixed(6) + ', ' + lng.toFixed(6);
+
+  // show coordinates immediately, then upgrade to address when geocoding returns
+  valueEl.textContent = coordStr;
+  midpointCopyText = coordStr;
+  box.classList.remove('hidden');
+
+  geocoder.coord2Address(lng, lat, function (result, status) {
+    if (status === kakao.maps.services.Status.OK && result[0]) {
+      var addr = result[0].road_address
+        ? result[0].road_address.address_name
+        : result[0].address.address_name;
+      valueEl.textContent = addr + '  ·  ' + coordStr;
+      midpointCopyText = addr + ' (' + coordStr + ')';
+    }
+  });
+}
+
+function hideMidpoint() {
+  document.getElementById('midpoint-box').classList.add('hidden');
+}
+
+function copyMidpoint() {
+  if (!midpointCopyText) return;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(midpointCopyText).then(showCopiedToast, function () {
+      fallbackCopy(midpointCopyText);
+      showCopiedToast();
+    });
+  } else {
+    fallbackCopy(midpointCopyText);
+    showCopiedToast();
+  }
+}
+
+function fallbackCopy(text) {
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); } catch (e) { /* ignore */ }
+  document.body.removeChild(ta);
+}
+
+function showCopiedToast() {
+  var toast = document.getElementById('copied-toast');
+  toast.classList.add('show');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(function () { toast.classList.remove('show'); }, 2000);
+}
+
 // ── UI helpers ────────────────────────────────────────────────────────────────
 function showError(msg) {
   var el = document.getElementById('error-msg');
@@ -271,6 +333,7 @@ loadKakaoSDK()
       center: new kakao.maps.LatLng(37.2937156, 126.9743370),
       level: 4
     });
+    geocoder = new kakao.maps.services.Geocoder();
 
     renderLocationInputs(locationCount);
 
@@ -290,6 +353,7 @@ loadKakaoSDK()
     });
 
     document.getElementById('search-btn').addEventListener('click', handleSearch);
+    document.getElementById('midpoint-box').addEventListener('click', copyMidpoint);
   })
   .catch(function (err) {
     document.body.innerHTML =

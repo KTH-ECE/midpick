@@ -237,6 +237,62 @@ main {
   background: var(--border);
 }
 
+/* ── Midpoint box ── */
+.midpoint-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: .6rem .9rem;
+  font-size: .85rem;
+  cursor: pointer;
+  user-select: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+
+.midpoint-box:hover { border-color: var(--accent); box-shadow: var(--shadow); }
+.midpoint-box:active { transform: scale(.995); }
+
+.midpoint-icon { flex-shrink: 0; }
+
+.midpoint-value {
+  flex: 1;
+  min-width: 0;
+  color: var(--text);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.midpoint-copy-hint {
+  flex-shrink: 0;
+  font-size: .75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.copied-toast {
+  position: absolute;
+  top: -2.1rem;
+  right: .5rem;
+  background: var(--text);
+  color: #fff;
+  font-size: .75rem;
+  font-weight: 600;
+  padding: .35rem .6rem;
+  border-radius: 6px;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity .2s, transform .2s;
+}
+
+.copied-toast.show { opacity: 1; transform: translateY(0); }
+
 /* ── Results ── */
 .results-heading {
   font-size: 1.05rem;
