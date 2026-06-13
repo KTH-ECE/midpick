@@ -1,1 +1,0 @@
-const KAKAO_APP_KEY = '(API KEY)';
