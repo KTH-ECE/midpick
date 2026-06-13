@@ -32,4 +32,6 @@
 - changes/improvements:
         1. 7 more categories added
                 - convenience store / study cafe / gas & ev station / cinema & entertainment / accomodation / hospital / shopping
-        2. 
+        2. copyable midpoint box added
+                - thin box below map; shows midpoint address + coordinate when searched.
+                - click to copy; small "Copied!" popup appears for 2sec. 
