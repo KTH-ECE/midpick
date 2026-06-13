@@ -35,6 +35,10 @@ var I18N = {
     placeholder: 'e.g. Gangnam Station',
     byName: 'Search by name',
     customPlaceholder: 'e.g. Starbucks',
+    useLocation: 'Use my location',
+    geoLocating: 'Locating…',
+    errGeoUnsupported: 'Geolocation is not supported by your browser.',
+    errGeoDenied: 'Could not get your location. Please allow location access.',
     errSelectFilter: 'Select at least one filter or enter a name to search.',
     placeholder: 'e.g. Sungkyunkwan Univ. Station',
     errSelectFilter: 'Please select at least one filter.',
@@ -67,6 +71,10 @@ var I18N = {
     placeholder: '예: 강남역',
     byName: '이름으로 검색',
     customPlaceholder: '예: 스타벅스',
+    useLocation: '내 위치 사용',
+    geoLocating: '위치 확인 중…',
+    errGeoUnsupported: '이 브라우저는 위치 기능을 지원하지 않습니다.',
+    errGeoDenied: '위치를 가져올 수 없습니다. 위치 접근을 허용해주세요.',
     errSelectFilter: '필터를 선택하거나 검색할 이름을 입력해주세요.',
     placeholder: '예: 성균관대역',
     errSelectFilter: '필터를 하나 이상 선택해주세요.',
@@ -173,6 +181,8 @@ var searchRadius = 2000;
 var midpointCopyText = '';
 var toastTimer = null;
 var lastPlaces = null;
+var geoBtn;
+var geoBusy = false;
 
 // ── Markers ───────────────────────────────────────────────────────────────────
 function clearMarkers() {
@@ -273,6 +283,16 @@ function renderLocationInputs(n) {
     input.autocomplete = 'off';
     input.addEventListener('keydown', function (e) {
       if (e.key === 'Enter') handleSearch();
+    });
+    // floating "use my location" pill follows whichever empty box is focused
+    input.addEventListener('focus', function () {
+      if (!this.value.trim()) showGeoButton(this);
+    });
+    input.addEventListener('input', function () {
+      if (!geoBusy) hideGeoButton();
+    });
+    input.addEventListener('blur', function () {
+      if (!geoBusy) hideGeoButton();
     });
 
     group.appendChild(label);
@@ -488,6 +508,63 @@ function showCopiedToast() {
   toastTimer = setTimeout(function () { toast.classList.remove('show'); }, 2000);
 }
 
+// ── Use my location ─────────────────────────────────────────────────────────────
+function positionGeoButton(input) {
+  // float at the left side of the focused box, vertically centred
+  geoBtn.style.top  = (input.offsetTop + input.offsetHeight / 2) + 'px';
+  geoBtn.style.left = (input.offsetLeft + 6) + 'px';
+}
+
+function showGeoButton(input) {
+  geoBtn._target = input;
+  positionGeoButton(input);
+  geoBtn.classList.remove('hidden');
+}
+
+function hideGeoButton() {
+  geoBtn.classList.add('hidden');
+}
+
+function useMyLocation(input) {
+  if (!navigator.geolocation) { showError(t('errGeoUnsupported')); return; }
+
+  var label = geoBtn.querySelector('.geo-label');
+  geoBusy = true;
+  geoBtn.disabled = true;
+  if (label) label.textContent = t('geoLocating');
+
+  // getCurrentPosition triggers the browser's permission prompt
+  navigator.geolocation.getCurrentPosition(
+    function (pos) {
+      var lat = pos.coords.latitude;
+      var lng = pos.coords.longitude;
+      // reverse-geocode to an address (searchable via keywordSearch); fall back to coords
+      geocoder.coord2Address(lng, lat, function (result, status) {
+        if (status === kakao.maps.services.Status.OK && result[0]) {
+          input.value = result[0].road_address
+            ? result[0].road_address.address_name
+            : result[0].address.address_name;
+        } else {
+          input.value = lat.toFixed(6) + ', ' + lng.toFixed(6);
+        }
+        finishGeo(label);
+      });
+    },
+    function () {
+      showError(t('errGeoDenied'));
+      finishGeo(label);
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+  );
+}
+
+function finishGeo(label) {
+  geoBusy = false;
+  geoBtn.disabled = false;
+  if (label) label.textContent = t('useLocation');
+  hideGeoButton();
+}
+
 // ── UI helpers ────────────────────────────────────────────────────────────────
 function showError(msg) {
   var el = document.getElementById('error-msg');
@@ -519,6 +596,12 @@ loadKakaoSDK()
       level: 4
     });
     geocoder = new kakao.maps.services.Geocoder();
+
+    geoBtn = document.getElementById('geo-btn');
+    geoBtn.addEventListener('mousedown', function (e) { e.preventDefault(); }); // keep the input focused
+    geoBtn.addEventListener('click', function () {
+      if (geoBtn._target) useMyLocation(geoBtn._target);
+    });
 
     renderLocationInputs(locationCount);
 

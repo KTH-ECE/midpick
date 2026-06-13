@@ -45,4 +45,8 @@
         5. custom (brand/name) search added
                 - text box in filter panel; e.g. "Starbucks".
                 - keyword search around midpoint within radius; works with or without category filters.
-                - custom hits tagged "custom" (dark marker), de-duplicated against category results. 
+                - custom hits tagged "custom" (dark marker), de-duplicated against category results.
+        6. "use my location" added
+                - small floating pill follows the focused (empty) input on its left side.
+                - asks browser permission; reverse-geocodes gps to an address and autofills the box.
+                - needs a secure context (https or localhost) for geolocation to work. 
