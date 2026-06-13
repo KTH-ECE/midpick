@@ -33,6 +33,7 @@ var I18N = {
     midpoint: 'Midpoint',
     point: 'Point',
     placeholder: 'e.g. Gangnam Station',
+    biasHint: 'Higher % = midpoint closer to that person.',
     byName: 'Search by name',
     customPlaceholder: 'e.g. Starbucks',
     useLocation: 'Use my location',
@@ -67,6 +68,7 @@ var I18N = {
     midpoint: '중간 지점',
     point: '지점',
     placeholder: '예: 강남역',
+    biasHint: '%가 높을수록 중간 지점이 그 사람에게 가까워집니다.',
     byName: '이름으로 검색',
     customPlaceholder: '예: 스타벅스',
     useLocation: '내 위치 사용',
@@ -291,18 +293,54 @@ function renderLocationInputs(n) {
       if (!geoBusy) hideGeoButton();
     });
 
+    // bias weight: a higher share pulls the midpoint toward this point
+    var weightRow = document.createElement('div');
+    weightRow.className = 'weight-row';
+
+    var weight = document.createElement('input');
+    weight.type = 'range';
+    weight.className = 'weight-slider';
+    weight.id = 'weight' + i;
+    weight.min = 1;
+    weight.max = 100;
+    weight.value = 50;
+    weight.addEventListener('input', updateWeightLabels);
+
+    var pct = document.createElement('span');
+    pct.className = 'weight-pct';
+    pct.id = 'weight-pct' + i;
+
+    weightRow.appendChild(weight);
+    weightRow.appendChild(pct);
+
     group.appendChild(label);
     group.appendChild(input);
+    group.appendChild(weightRow);
     container.appendChild(group);
   }
+  updateWeightLabels();
+}
+
+// show each point's share of the total weight as a percentage
+function updateWeightLabels() {
+  var sliders = document.querySelectorAll('.weight-slider');
+  var total = 0;
+  Array.prototype.forEach.call(sliders, function (s) { total += parseFloat(s.value); });
+  Array.prototype.forEach.call(sliders, function (s, i) {
+    var pct = total > 0 ? Math.round(parseFloat(s.value) / total * 100) : 0;
+    var el = document.getElementById('weight-pct' + (i + 1));
+    if (el) el.textContent = pct + '%';
+  });
 }
 
 // ── Handler ───────────────────────────────────────────────────────────────────
 function handleSearch() {
   var addrs = [];
+  var weights = [];
   for (var i = 1; i <= locationCount; i++) {
-    var val = document.getElementById('addr' + i).value.trim();
-    addrs.push(val);
+    addrs.push(document.getElementById('addr' + i).value.trim());
+    var wEl = document.getElementById('weight' + i);
+    weights.push(wEl ? parseFloat(wEl.value) : 1);
   }
   var btn      = document.getElementById('search-btn');
   var selected = getSelectedCategories();
@@ -322,8 +360,10 @@ function handleSearch() {
 
   Promise.all(addrs.map(searchLocation))
     .then(function (coords) {
-      var midLat = coords.reduce(function (s, c) { return s + c.lat; }, 0) / coords.length;
-      var midLng = coords.reduce(function (s, c) { return s + c.lng; }, 0) / coords.length;
+      // weighted midpoint: a higher weight pulls the centre toward that point
+      var totalW = weights.reduce(function (s, x) { return s + x; }, 0) || coords.length;
+      var midLat = coords.reduce(function (s, c, i) { return s + c.lat * weights[i]; }, 0) / totalW;
+      var midLng = coords.reduce(function (s, c, i) { return s + c.lng * weights[i]; }, 0) / totalW;
       var midLatLng = new kakao.maps.LatLng(midLat, midLng);
 
       clearMarkers();

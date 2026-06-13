@@ -32,11 +32,11 @@ places nearby. Built on the Kakao Maps API.
 4. **Language toggle (EN / KO)** — small pill at the top-right of the header; switches all UI text live; choice saved in `localStorage`.
 5. **Custom (brand/name) search** — text box in the filter panel (e.g. "Starbucks"); keyword search around the midpoint, with or without category filters. Custom hits get a dark "Custom" marker and are de-duplicated against category results.
 6. **Use my location** — a floating pill follows the focused (empty) input, sitting to its left; asks for browser permission, reverse-geocodes GPS to an address, and autofills the box. *(Needs https or localhost.)*
+7. **Bias / fairness weighting** — each Point box has a weight slider with a live %; the midpoint is a weighted average, so a higher % sits closer to that person. Equal sliders (the default) give the balanced centroid.
 
 ---
 
 ## Backlog — possible improvements
-- [ ] **Bias / fairness weighting** — adjust how close the midpoint sits to each person (e.g. P1 40% / P2 30% / P3 30% → P1 ends up closest).
 - [ ] **Pin / lock locations** — a small pin on each box keeps it fixed while changing the location count; the count slider can't drop below the number of pinned boxes.
 - [ ] **A few more categories** — e.g. bar, PC game room.
 
