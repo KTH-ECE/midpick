@@ -10,7 +10,8 @@ var CATEGORIES = {
   CT1: { en: 'Entertainment', ko: '문화시설',    color: '#E91E63' },
   AD5: { en: 'Accommodation', ko: '숙박',        color: '#607D8B' },
   HP8: { en: 'Hospital',      ko: '병원',        color: '#F44336' },
-  MT1: { en: 'Shopping',      ko: '쇼핑',        color: '#009688' }
+  MT1: { en: 'Shopping',      ko: '쇼핑',        color: '#009688' },
+  CUSTOM: { en: 'Custom',     ko: '맞춤',        color: '#111827' }
 };
 
 // ── i18n ──────────────────────────────────────────────────────────────────────
@@ -31,6 +32,10 @@ var I18N = {
     searching: 'Searching…',
     midpoint: 'Midpoint',
     point: 'Point',
+    placeholder: 'e.g. Gangnam Station',
+    byName: 'Search by name',
+    customPlaceholder: 'e.g. Starbucks',
+    errSelectFilter: 'Select at least one filter or enter a name to search.',
     placeholder: 'e.g. Sungkyunkwan Univ. Station',
     errSelectFilter: 'Please select at least one filter.',
     errNoResults: 'No results found within the radius. Try different locations.',
@@ -59,6 +64,10 @@ var I18N = {
     searching: '검색 중…',
     midpoint: '중간 지점',
     point: '지점',
+    placeholder: '예: 강남역',
+    byName: '이름으로 검색',
+    customPlaceholder: '예: 스타벅스',
+    errSelectFilter: '필터를 선택하거나 검색할 이름을 입력해주세요.',
     placeholder: '예: 성균관대역',
     errSelectFilter: '필터를 하나 이상 선택해주세요.',
     errNoResults: '반경 내에 결과를 찾을 수 없습니다. 다른 위치로 시도해보세요.',
@@ -102,6 +111,12 @@ function applyLanguage(lang) {
   Array.prototype.forEach.call(document.querySelectorAll('[data-i18n]'), function (el) {
     var val = I18N[lang][el.getAttribute('data-i18n')];
     if (val != null) el.textContent = val;
+  });
+
+  // placeholders flagged with data-i18n-ph
+  Array.prototype.forEach.call(document.querySelectorAll('[data-i18n-ph]'), function (el) {
+    var val = I18N[lang][el.getAttribute('data-i18n-ph')];
+    if (val != null) el.placeholder = val;
   });
 
   // point labels + input placeholders (preserve whatever the user has typed)
@@ -224,6 +239,21 @@ function getSelectedCategories() {
   return Array.prototype.map.call(checked, function (el) { return el.value; });
 }
 
+// custom brand/name search — keywordSearch around the midpoint (e.g. "Starbucks")
+function searchKeyword(keyword, midLatLng) {
+  var places = new kakao.maps.services.Places();
+  return new Promise(function (resolve) {
+    places.keywordSearch(keyword, function (results, status) {
+      if (status === kakao.maps.services.Status.OK) {
+        results.forEach(function (r) { r._categoryCode = 'CUSTOM'; });
+        resolve(results);
+      } else {
+        resolve([]);
+      }
+    }, { location: midLatLng, radius: searchRadius, sort: kakao.maps.services.SortBy.DISTANCE });
+  });
+}
+
 // ── Location inputs ───────────────────────────────────────────────────────────
 function renderLocationInputs(n) {
   var container = document.getElementById('location-inputs');
@@ -260,12 +290,13 @@ function handleSearch() {
   }
   var btn      = document.getElementById('search-btn');
   var selected = getSelectedCategories();
+  var customKeyword = document.getElementById('custom-keyword').value.trim();
 
   if (addrs.some(function (a) { return !a; })) {
     showError(msgAllLocations(locationCount));
     return;
   }
-  if (selected.length === 0) { showError(t('errSelectFilter')); return; }
+  if (selected.length === 0 && !customKeyword) { showError(t('errSelectFilter')); return; }
 
   btn.disabled = true;
   btn.textContent = t('searching');
@@ -289,16 +320,30 @@ function handleSearch() {
       });
       makeMarker(midLatLng, t('midpoint'), '#5dd639');
 
-      return Promise.all(selected.map(function (code) {
-        return searchCategory(code, midLatLng);
-      }));
+      // custom keyword goes first so its tag wins on de-duplication
+      var tasks = [];
+      if (customKeyword) tasks.push(searchKeyword(customKeyword, midLatLng));
+      selected.forEach(function (code) {
+        tasks.push(searchCategory(code, midLatLng));
+      });
+      return Promise.all(tasks);
     })
-    .then(function (resultsPerCategory) {
+    .then(function (resultArrays) {
       btn.disabled = false;
       btn.textContent = t('find');
 
       var all = [];
-      resultsPerCategory.forEach(function (results) { all = all.concat(results); });
+      resultArrays.forEach(function (results) { all = all.concat(results); });
+
+      // a custom hit can also appear in a category — keep the first (custom) copy
+      var seen = {};
+      all = all.filter(function (p) {
+        if (!p.id) return true;
+        if (seen[p.id]) return false;
+        seen[p.id] = true;
+        return true;
+      });
+
       all.sort(function (a, b) { return parseInt(a.distance) - parseInt(b.distance); });
 
       if (all.length === 0) {
@@ -494,6 +539,9 @@ loadKakaoSDK()
 
     document.getElementById('search-btn').addEventListener('click', handleSearch);
     document.getElementById('midpoint-box').addEventListener('click', copyMidpoint);
+    document.getElementById('custom-keyword').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') handleSearch();
+    });
   })
   .catch(function (err) {
     document.body.innerHTML =
