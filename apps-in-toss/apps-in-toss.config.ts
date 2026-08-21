@@ -2,7 +2,7 @@ import { defineConfig } from '@apps-in-toss/web-framework/config';
 
 export default defineConfig({
   // Must match the app name registered in the Apps in Toss console.
-  appName: 'midpick',
+  appName: 'my-midpick',
   brand: {
     primaryColor: '#4361EE', // matches --accent in web/style.css
   },

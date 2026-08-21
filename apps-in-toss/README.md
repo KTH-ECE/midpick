@@ -15,7 +15,7 @@ Toss app login:
 
 1. Sign up at the Apps in Toss console (needs a Toss app login under your
    real name, 19+). Create a workspace.
-2. In the workspace, register a new app named **`midpick`** (must match
+2. In the workspace, register a new app named **`my-midpick`** (must match
    `appName` in `apps-in-toss.config.ts`).
 3. Grab an API token for deploying from the CLI: console → workspace →
    API tokens (or run `npx ait token add` and paste it when prompted).
@@ -25,7 +25,7 @@ Toss app login:
 ```bash
 cd apps-in-toss
 npm install
-npm run build      # produces midpick.ait in this folder
+npm run build      # produces my-midpick.ait in this folder
 ```
 
 `web/config.js` (your real Kakao Maps key, gitignored) must exist first —
@@ -35,7 +35,7 @@ loaded by `web/index.html` and gets packed into the bundle as-is.
 ## Upload & test in the Toss app
 
 Either:
-- Upload `midpick.ait` manually in the console ("버전 등록하기" screen), or
+- Upload `my-midpick.ait` manually in the console ("버전 등록하기" screen), or
 - `npm run deploy` (uses the token from `ait token add`)
 
 Either way, the console then gives you a test scheme/QR code — scan it from
