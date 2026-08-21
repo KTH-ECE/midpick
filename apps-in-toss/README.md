@@ -40,13 +40,36 @@ same way it works on a normal website — just make sure that key's allowed
 domains (Kakao Developers console → your app → 플랫폼 → Web) cover wherever
 Apps in Toss actually serves the bundle from.
 
-Note: other Apps in Toss developers have reported the Kakao Maps SDK
-`<script>` tag failing to load (infinite loading, especially on iOS) inside
-the Toss WebView even with the domain registered — possibly a CSP
-(`script-src`) restriction. If the map still doesn't load with a real key
-and the right domain registered, check the
-[Apps in Toss dev community](https://techchat-apps-in-toss.toss.im) for the
-current workaround.
+### "Failed to load the Kakao Maps SDK" in the Toss app
+
+This means a real key *is* in the bundle (the prebuild check would have
+caught a missing one) but the `<script src="//dapi.kakao.com/...">` request
+itself failed. `apps-in-toss.config.ts`'s `permissions` field only covers
+clipboard/geolocation/contacts/photos/camera/microphone — there's no
+domain/network allowlist to set here, so this isn't something fixable by
+editing this repo. It's one of:
+
+1. **The Kakao key's allowed domains don't include wherever Apps in Toss
+   actually serves the bundle from.** Add it under Kakao Developers console →
+   your app → 플랫폼 → Web. Other Apps in Toss developers have registered
+   combinations of: `https://<appName>.apps.tossmini.com`,
+   `https://<appName>.private-apps.tossmini.com`,
+   `https://apps-in-toss.toss.im`, `https://minion.toss.im`, `https://toss.im`
+   — try the console's test/deploy logs or a devtools network trace to see
+   the actual origin the SDK request is failing from, and register that
+   exact one (scheme included).
+2. **A known, still-open issue**: other developers report this exact script
+   tag failing inside the Toss WebView even with the domain registered
+   (especially on iOS), possibly a CSP (`script-src`) restriction on Toss's
+   side. If (1) doesn't fix it, this is likely it — check
+   [Apps in Toss dev community](https://techchat-apps-in-toss.toss.im) for
+   the current workaround, since it may need a fix on Toss's end rather than
+   this app's.
+
+To isolate which one you're hitting: open the same key/config in a normal
+mobile browser via a plain HTTPS URL (e.g. `web/` deployed to GitHub Pages)
+first — if the map loads there, the key and its domain list are fine and
+the problem is specific to the Toss WebView (case 2).
 
 ## Upload & test in the Toss app
 
