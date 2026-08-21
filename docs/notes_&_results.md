@@ -37,6 +37,14 @@ places nearby. Built on the Kakao Maps API.
 
 ---
 
+### Apps in Toss packaging
+- Added `apps-in-toss/` — wraps the existing `web/` app (unchanged) as a
+  `.ait` bundle for testing inside the Toss app, for early reaction/feedback
+  before a real launch. Console signup, app registration, and upload/review
+  still need to be done manually (needs a real Toss account).
+
+---
+
 ## Backlog — possible improvements
 - [ ] **Pin / lock locations** — a small pin on each box keeps it fixed while changing the location count; the count slider can't drop below the number of pinned boxes.
 - [ ] **A few more categories** — e.g. bar, PC game room.
