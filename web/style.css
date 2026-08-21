@@ -100,8 +100,7 @@ main {
 }
 
 /* ── Filter panel ── */
-.filter-panel,
-.reset-panel {
+.filter-panel {
   width: 200px;
   flex-shrink: 0;
   background: var(--surface);
@@ -113,23 +112,39 @@ main {
   gap: .75rem;
 }
 
-/* ── Reset panel buttons ── */
-.reset-btn {
-  width: 100%;
-  padding: .5rem .6rem;
+.filter-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+}
+
+/* ── Small icon reset buttons (replace the old reset panel) ── */
+.card-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: .4rem;
+}
+
+.icon-btn {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: var(--bg);
-  color: var(--text);
+  color: var(--text-muted);
   border: 1.5px solid var(--border);
   border-radius: 8px;
-  font-family: inherit;
-  font-size: .82rem;
-  font-weight: 600;
+  font-size: .9rem;
+  line-height: 1;
   cursor: pointer;
   transition: border-color .15s, color .15s, transform .1s;
 }
 
-.reset-btn:hover { border-color: var(--accent); color: var(--accent); }
-.reset-btn:active { transform: scale(.98); }
+.icon-btn:hover { border-color: var(--accent); color: var(--accent); }
+.icon-btn:active { transform: scale(.92); }
 
 /* ── Search card ── */
 .search-card {
@@ -536,7 +551,7 @@ main {
   .page-body { flex-direction: column; }
   main { order: 1; }
   .filter-panel { order: 2; width: 100%; flex-direction: row; flex-wrap: wrap; gap: .5rem 1.25rem; }
-  .reset-panel { order: 3; width: 100%; }
-  .filter-title { width: 100%; }
+  .filter-panel > .filter-title { width: 100%; }
+  .filter-title-row { width: 100%; }
   .place-item { padding: .75rem .85rem; }
 }

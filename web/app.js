@@ -23,7 +23,6 @@ var I18N = {
     locations: 'Locations',
     radius: 'Search radius',
     filter: 'Filter',
-    resetTitle: 'Reset',
     resetBias: 'Reset %',
     clearPoints: 'Clear points',
     clearFilters: 'Untick filters',
@@ -64,7 +63,6 @@ var I18N = {
     locations: '위치 수',
     radius: '검색 반경',
     filter: '필터',
-    resetTitle: '초기화',
     resetBias: '비율 초기화',
     clearPoints: '위치 비우기',
     clearFilters: '필터 해제',
@@ -135,6 +133,12 @@ function applyLanguage(lang) {
   Array.prototype.forEach.call(document.querySelectorAll('[data-i18n-ph]'), function (el) {
     var val = I18N[lang][el.getAttribute('data-i18n-ph')];
     if (val != null) el.placeholder = val;
+  });
+
+  // title/aria-label flagged with data-i18n-title (icon-only buttons)
+  Array.prototype.forEach.call(document.querySelectorAll('[data-i18n-title]'), function (el) {
+    var val = I18N[lang][el.getAttribute('data-i18n-title')];
+    if (val != null) { el.title = val; el.setAttribute('aria-label', val); }
   });
 
   // point labels + input placeholders (preserve whatever the user has typed)

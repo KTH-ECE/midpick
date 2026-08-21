@@ -18,15 +18,14 @@
   </header>
 
   <div class="page-body">
-    <aside class="reset-panel">
-      <p class="filter-title" data-i18n="resetTitle">Reset</p>
-      <button type="button" id="reset-bias" class="reset-btn" data-i18n="resetBias">Reset %</button>
-      <button type="button" id="clear-points" class="reset-btn" data-i18n="clearPoints">Clear points</button>
-      <button type="button" id="clear-filters" class="reset-btn" data-i18n="clearFilters">Untick filters</button>
-    </aside>
-
     <main>
       <section class="search-card">
+        <div class="card-actions">
+          <button type="button" id="clear-points" class="icon-btn"
+                  title="Clear points" aria-label="Clear points" data-i18n-title="clearPoints">🧹</button>
+          <button type="button" id="reset-bias" class="icon-btn"
+                  title="Reset %" aria-label="Reset %" data-i18n-title="resetBias">↺</button>
+        </div>
         <div id="location-inputs"></div>
         <p class="bias-hint" data-i18n="biasHint">Higher % = midpoint closer to that person.</p>
         <button id="geo-btn" class="geo-btn hidden" type="button">
@@ -70,7 +69,11 @@
 
       <hr class="filter-divider">
 
-      <p class="filter-title" data-i18n="filter">Filter</p>
+      <div class="filter-title-row">
+        <p class="filter-title" data-i18n="filter">Filter</p>
+        <button type="button" id="clear-filters" class="icon-btn"
+                title="Untick filters" aria-label="Untick filters" data-i18n-title="clearFilters">✕</button>
+      </div>
       <label class="filter-item">
         <input class="filter-check" type="checkbox" value="CE7" checked>
         <span class="filter-dot" style="background:#43AA8B"></span>
