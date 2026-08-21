@@ -34,6 +34,9 @@ places nearby. Built on the Kakao Maps API.
 6. **Use my location** — a floating pill follows the focused (empty) input, sitting to its left; asks for browser permission, reverse-geocodes GPS to an address, and autofills the box. *(Needs https or localhost.)*
 7. **Bias / fairness weighting** — each Point box has a weight slider with a live %; the midpoint is a weighted average, so a higher % sits closer to that person. Equal sliders (the default) give the balanced centroid.
 8. **Reset actions as small icon buttons** — *Reset %*/*Clear points* (top-right of the search card) and *Untick filters* (next to the Filter heading) replace the old dedicated reset side panel; same actions, no extra full-width section to scroll past on mobile.
+9. **Mobile layout order** — on narrow screens the filter panel now stacks right after the search card (before the map), not below everything else; `.page-body` moved from flexbox to CSS grid (`main` is `display:contents`) so each section can be reordered independently per breakpoint.
+10. **Per-point clear (×) button** — small "×" inside each location input, right-aligned; clears just that one box.
+11. **Bigger Locations/Search radius sliders** — track now fills the full filter panel width on mobile (was being squeezed by the panel's row-wrap layout), and the thumb is larger for easier touch dragging.
 
 ---
 
