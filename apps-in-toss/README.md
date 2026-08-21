@@ -47,29 +47,26 @@ caught a missing one) but the `<script src="//dapi.kakao.com/...">` request
 itself failed. `apps-in-toss.config.ts`'s `permissions` field only covers
 clipboard/geolocation/contacts/photos/camera/microphone — there's no
 domain/network allowlist to set here, so this isn't something fixable by
-editing this repo. It's one of:
+editing this repo. It's the mini app's Origin not being allowed wherever
+the request lands — same mechanism as CORS, and per the official docs
+(App-in-Toss server API guide) this Origin is:
 
-1. **The Kakao key's allowed domains don't include wherever Apps in Toss
-   actually serves the bundle from.** Add it under Kakao Developers console →
-   your app → 플랫폼 → Web. Other Apps in Toss developers have registered
-   combinations of: `https://<appName>.apps.tossmini.com`,
-   `https://<appName>.private-apps.tossmini.com`,
-   `https://apps-in-toss.toss.im`, `https://minion.toss.im`, `https://toss.im`
-   — try the console's test/deploy logs or a devtools network trace to see
-   the actual origin the SDK request is failing from, and register that
-   exact one (scheme included).
-2. **A known, still-open issue**: other developers report this exact script
-   tag failing inside the Toss WebView even with the domain registered
-   (especially on iOS), possibly a CSP (`script-src`) restriction on Toss's
-   side. If (1) doesn't fix it, this is likely it — check
-   [Apps in Toss dev community](https://techchat-apps-in-toss.toss.im) for
-   the current workaround, since it may need a fix on Toss's end rather than
-   this app's.
+- `https://my-midpick.apps.tossmini.com` — live service
+- `https://my-midpick.private-apps.tossmini.com` — console QR test
+- From **2026-08-25**, bundles get the newer Origins instead:
+  `https://my-midpick.web.tossmini.com` (live) /
+  `https://my-midpick.private-web.tossmini.com` (console QR test)
 
-To isolate which one you're hitting: open the same key/config in a normal
-mobile browser via a plain HTTPS URL (e.g. `web/` deployed to GitHub Pages)
-first — if the map loads there, the key and its domain list are fine and
-the problem is specific to the Toss WebView (case 2).
+Add all four to the Kakao key's allowed domains (Kakao Developers console →
+your app → 플랫폼 → Web → 사이트 도메인) so it keeps working across that
+switch. Since we're testing via the console's QR code, `private-apps` (or
+`private-web` after the 25th) is the one that matters right now.
+
+If all four are registered and it still fails, that points to a platform
+issue rather than a config one — check the
+[Apps in Toss dev community](https://techchat-apps-in-toss.toss.im), since
+other developers have reported this exact script tag failing inside the
+Toss WebView even with the right domain registered.
 
 ## Upload & test in the Toss app
 
