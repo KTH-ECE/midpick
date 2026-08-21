@@ -30,7 +30,23 @@ npm run build      # produces my-midpick.ait in this folder
 
 `web/config.js` (your real Kakao Maps key, gitignored) must exist first —
 copy it from `web/config.example.js` if you haven't already, since it's
-loaded by `web/index.html` and gets packed into the bundle as-is.
+loaded by `web/index.html` and gets packed into the bundle as-is. `npm run
+build` now checks this first and fails loudly if `web/config.js` is missing
+or still has a placeholder key — that's what "API key" errors when testing
+in the Toss app usually mean: the bundle was built without a real key baked
+in, not that each user needs their own key. **One key from the Kakao
+Developers console is baked into the bundle and shared by every user**, the
+same way it works on a normal website — just make sure that key's allowed
+domains (Kakao Developers console → your app → 플랫폼 → Web) cover wherever
+Apps in Toss actually serves the bundle from.
+
+Note: other Apps in Toss developers have reported the Kakao Maps SDK
+`<script>` tag failing to load (infinite loading, especially on iOS) inside
+the Toss WebView even with the domain registered — possibly a CSP
+(`script-src`) restriction. If the map still doesn't load with a real key
+and the right domain registered, check the
+[Apps in Toss dev community](https://techchat-apps-in-toss.toss.im) for the
+current workaround.
 
 ## Upload & test in the Toss app
 
