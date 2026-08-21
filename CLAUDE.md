@@ -6,6 +6,10 @@ and lists the places nearby. Plain JS/HTML/CSS, run with VS Code Live Server.
 ## Layout
 - `web/` — the app: `index.html`, `app.js`, `style.css`, `config.example.js`
 - `web/config.js` — Kakao JS app key (gitignored; copy from `config.example.js`)
+- `apps-in-toss/` — packages `web/` as-is into a `.ait` bundle for testing
+  inside the Toss app (Apps in Toss); see its README. Has its own
+  `package.json` since the Apps in Toss CLI requires it — exempt from the
+  "no build step" rule below.
 - `docs/notes_&_results.md` — changelog / version notes
 - `images/` — screenshots
 
