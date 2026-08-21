@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "prebuild": "node check-config.js",
     "build": "ait build",
     "deploy": "ait deploy"
   },
