@@ -24,6 +24,7 @@ var I18N = {
     radius: 'Search radius',
     filter: 'Filter',
     resetBias: 'Reset %',
+    clearPoint: 'Clear this point',
     clearPoints: 'Clear points',
     clearFilters: 'Untick filters',
     nearby: 'Nearby',
@@ -64,6 +65,7 @@ var I18N = {
     radius: '검색 반경',
     filter: '필터',
     resetBias: '비율 초기화',
+    clearPoint: '이 지점 지우기',
     clearPoints: '위치 비우기',
     clearFilters: '필터 해제',
     nearby: '주변',
@@ -283,58 +285,87 @@ function renderLocationInputs(n) {
   var container = document.getElementById('location-inputs');
   container.innerHTML = '';
   for (var i = 1; i <= n; i++) {
-    var group = document.createElement('div');
-    group.className = 'input-group';
-
-    var label = document.createElement('label');
-    label.setAttribute('for', 'addr' + i);
-    label.textContent = t('point') + ' ' + i;
-
-    var input = document.createElement('input');
-    input.type = 'text';
-    input.id = 'addr' + i;
-    input.placeholder = t('placeholder');
-    input.autocomplete = 'off';
-    input.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') handleSearch();
-    });
-    // floating "use my location" pill follows whichever empty box is focused
-    input.addEventListener('focus', function () {
-      if (!this.value.trim()) showGeoButton(this);
-    });
-    input.addEventListener('input', function () {
-      if (!geoBusy) hideGeoButton();
-    });
-    input.addEventListener('blur', function () {
-      if (!geoBusy) hideGeoButton();
-    });
-
-    // bias weight: a higher share pulls the midpoint toward this point
-    var weightRow = document.createElement('div');
-    weightRow.className = 'weight-row';
-
-    var weight = document.createElement('input');
-    weight.type = 'range';
-    weight.className = 'weight-slider';
-    weight.id = 'weight' + i;
-    weight.min = 1;
-    weight.max = 100;
-    weight.value = 50;
-    weight.addEventListener('input', updateWeightLabels);
-
-    var pct = document.createElement('span');
-    pct.className = 'weight-pct';
-    pct.id = 'weight-pct' + i;
-
-    weightRow.appendChild(weight);
-    weightRow.appendChild(pct);
-
-    group.appendChild(label);
-    group.appendChild(input);
-    group.appendChild(weightRow);
-    container.appendChild(group);
+    container.appendChild(createPointGroup(i));
   }
   updateWeightLabels();
+}
+
+// own function scope per point, so each input/clear-button pair gets its own
+// closures instead of all sharing the loop's last values (classic var-in-loop bug)
+function createPointGroup(i) {
+  var group = document.createElement('div');
+  group.className = 'input-group';
+
+  var label = document.createElement('label');
+  label.setAttribute('for', 'addr' + i);
+  label.textContent = t('point') + ' ' + i;
+
+  var wrap = document.createElement('div');
+  wrap.className = 'input-wrap';
+
+  var input = document.createElement('input');
+  input.type = 'text';
+  input.id = 'addr' + i;
+  input.placeholder = t('placeholder');
+  input.autocomplete = 'off';
+
+  // small "x" inside the box, right-aligned; clears just this one input
+  var clearBtn = document.createElement('button');
+  clearBtn.type = 'button';
+  clearBtn.className = 'input-clear-btn hidden';
+  clearBtn.textContent = '✕';
+  clearBtn.title = t('clearPoint');
+  clearBtn.setAttribute('aria-label', t('clearPoint'));
+  clearBtn.setAttribute('data-i18n-title', 'clearPoint');
+  clearBtn.addEventListener('mousedown', function (e) { e.preventDefault(); }); // keep the input focused
+  clearBtn.addEventListener('click', function () {
+    input.value = '';
+    clearBtn.classList.add('hidden');
+    input.focus();
+  });
+
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') handleSearch();
+  });
+  // floating "use my location" pill follows whichever empty box is focused
+  input.addEventListener('focus', function () {
+    if (!this.value.trim()) showGeoButton(this);
+  });
+  input.addEventListener('input', function () {
+    if (!geoBusy) hideGeoButton();
+    clearBtn.classList.toggle('hidden', !this.value);
+  });
+  input.addEventListener('blur', function () {
+    if (!geoBusy) hideGeoButton();
+  });
+
+  wrap.appendChild(input);
+  wrap.appendChild(clearBtn);
+
+  // bias weight: a higher share pulls the midpoint toward this point
+  var weightRow = document.createElement('div');
+  weightRow.className = 'weight-row';
+
+  var weight = document.createElement('input');
+  weight.type = 'range';
+  weight.className = 'weight-slider';
+  weight.id = 'weight' + i;
+  weight.min = 1;
+  weight.max = 100;
+  weight.value = 50;
+  weight.addEventListener('input', updateWeightLabels);
+
+  var pct = document.createElement('span');
+  pct.className = 'weight-pct';
+  pct.id = 'weight-pct' + i;
+
+  weightRow.appendChild(weight);
+  weightRow.appendChild(pct);
+
+  group.appendChild(label);
+  group.appendChild(wrap);
+  group.appendChild(weightRow);
+  return group;
 }
 
 // show each point's share of the total weight as a percentage

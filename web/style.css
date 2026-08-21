@@ -81,28 +81,38 @@ header h1 {
   opacity: .85;
 }
 
-/* ── Page layout ── */
+/* ── Page layout ──
+   main is unstyled (display: contents) so its children act as direct grid
+   items of .page-body; that's what lets the mobile media query below
+   reorder search-card/filter-panel/map/etc independently instead of moving
+   the whole filter panel as one block. */
 .page-body {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 200px;
+  grid-template-areas:
+    "search   filter"
+    "error    filter"
+    "map      filter"
+    "midpoint filter"
+    "results  filter";
   gap: 1.25rem;
-  align-items: flex-start;
+  align-items: start;
   max-width: 1100px;
   margin: 0 auto;
   padding: 1.5rem 1rem 3rem;
 }
 
-main {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
+main { display: contents; }
+
+.search-card      { grid-area: search; }
+.error-msg        { grid-area: error; }
+#map              { grid-area: map; }
+.midpoint-box     { grid-area: midpoint; }
+#results-section  { grid-area: results; }
+.filter-panel     { grid-area: filter; }
 
 /* ── Filter panel ── */
 .filter-panel {
-  width: 200px;
-  flex-shrink: 0;
   background: var(--surface);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
@@ -215,6 +225,31 @@ main {
   background: #fff;
 }
 
+.input-wrap { position: relative; }
+
+.input-wrap input { padding-right: 2.4rem; }
+
+.input-clear-btn {
+  position: absolute;
+  top: 50%;
+  right: .5rem;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: .8rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.input-clear-btn:hover { background: var(--border); color: var(--text); }
+
 /* ── Bias / fairness weight ── */
 .weight-row {
   display: flex;
@@ -253,29 +288,46 @@ main {
   gap: .5rem;
 }
 
+/* Locations / Search radius sliders — bigger track + thumb, easier to grab on touch */
 .slider-row input[type="range"] {
   flex: 1;
-  accent-color: var(--accent);
+  -webkit-appearance: none;
+  appearance: none;
+  height: 32px; /* touch target, track itself is drawn thinner below */
+  background: transparent;
   cursor: pointer;
 }
 
-.slider-val {
-  font-size: .9rem;
-  font-weight: 700;
-  color: var(--accent);
-  min-width: 1ch;
-  text-align: right;
+.slider-row input[type="range"]::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--border);
+}
+.slider-row input[type="range"]::-moz-range-track {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--border);
 }
 
-.slider-row {
-  display: flex;
-  align-items: center;
-  gap: .5rem;
+.slider-row input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 26px;
+  height: 26px;
+  margin-top: -9px; /* centers the 26px thumb on the 8px track */
+  border-radius: 50%;
+  background: var(--accent);
+  border: 3px solid #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .25);
+  cursor: pointer;
 }
-
-.slider-row input[type="range"] {
-  flex: 1;
-  accent-color: var(--accent);
+.slider-row input[type="range"]::-moz-range-thumb {
+  width: 26px;
+  height: 26px;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .25);
   cursor: pointer;
 }
 
@@ -548,10 +600,22 @@ main {
 @media (max-width: 600px) {
   header h1 { font-size: 1.6rem; }
   #map { height: 300px; }
-  .page-body { flex-direction: column; }
-  main { order: 1; }
-  .filter-panel { order: 2; width: 100%; flex-direction: row; flex-wrap: wrap; gap: .5rem 1.25rem; }
-  .filter-panel > .filter-title { width: 100%; }
+
+  .page-body {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "search"
+      "filter"
+      "map"
+      "error"
+      "midpoint"
+      "results";
+  }
+
+  .filter-panel { flex-direction: row; flex-wrap: wrap; gap: .5rem 1.25rem; }
+  .filter-panel > .filter-title,
+  .filter-panel > .slider-row,
+  .filter-panel > .filter-divider { width: 100%; }
   .filter-title-row { width: 100%; }
   .place-item { padding: .75rem .85rem; }
 }
