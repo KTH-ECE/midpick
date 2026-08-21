@@ -6,7 +6,9 @@ export default defineConfig({
   brand: {
     primaryColor: '#4361EE', // matches --accent in web/style.css
   },
-  permissions: [],
+  permissions: [
+    { name: 'geolocation', access: 'access' }, // needed for the "Use my location" button
+  ],
   // MidPick has no build step, so the existing static site is packed as-is.
   webBundleDir: '../web',
 });
